@@ -1,0 +1,491 @@
+@prefix : <http://example.org/biomarker#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Ontology declaration
+: a owl:Ontology ;
+  rdfs:label "Biomarker Characterization Ontology" ;
+  rdfs:comment "Ontology for biomarker characterization from molecular studies and clinical survival trials" .
+
+# Classes
+:Biomarker a owl:Class ;
+  rdfs:label "Biomarker" ;
+  rdfs:comment "Molecular biomarkers and their characteristics" .
+
+:MolecularAssay a owl:Class ;
+  rdfs:label "Molecular Assay" ;
+  rdfs:comment "Laboratory assays for biomarker measurement" .
+
+:PatientSample a owl:Class ;
+  rdfs:label "Patient Sample" ;
+  rdfs:comment "Patient samples collected for biomarker analysis" .
+
+:BiomarkerMeasurement a owl:Class ;
+  rdfs:label "Biomarker Measurement" ;
+  rdfs:comment "Quantitative biomarker measurements from patient samples" .
+
+:ClinicalStudy a owl:Class ;
+  rdfs:label "Clinical Study" ;
+  rdfs:comment "Clinical studies investigating biomarker-outcome relationships" .
+
+:PatientOutcome a owl:Class ;
+  rdfs:label "Patient Outcome" ;
+  rdfs:comment "Clinical outcomes and survival data for patients" .
+
+:BiomarkerAssociation a owl:Class ;
+  rdfs:label "Biomarker Association" ;
+  rdfs:comment "Statistical associations between biomarkers and clinical outcomes" .
+
+# Biomarker Properties
+:biomarkerId a owl:DatatypeProperty ;
+  rdfs:label "Biomarker ID" ;
+  rdfs:comment "Unique biomarker identifier" ;
+  rdfs:domain :Biomarker ;
+  rdfs:range xsd:string .
+
+:biomarkerName a owl:DatatypeProperty ;
+  rdfs:label "Biomarker Name" ;
+  rdfs:comment "Official biomarker name" ;
+  rdfs:domain :Biomarker ;
+  rdfs:range xsd:string .
+
+:biomarkerType a owl:DatatypeProperty ;
+  rdfs:label "Biomarker Type" ;
+  rdfs:comment "Type of biomarker (protein, gene, metabolite, miRNA)" ;
+  rdfs:domain :Biomarker ;
+  rdfs:range xsd:string .
+
+:molecularPathway a owl:DatatypeProperty ;
+  rdfs:label "Molecular Pathway" ;
+  rdfs:comment "Associated molecular pathway" ;
+  rdfs:domain :Biomarker ;
+  rdfs:range xsd:string .
+
+:tissueSpecificity a owl:DatatypeProperty ;
+  rdfs:label "Tissue Specificity" ;
+  rdfs:comment "Tissue or organ specificity" ;
+  rdfs:domain :Biomarker ;
+  rdfs:range xsd:string .
+
+:biomarkerClass a owl:DatatypeProperty ;
+  rdfs:label "Biomarker Class" ;
+  rdfs:comment "Functional classification (diagnostic, prognostic, predictive)" ;
+  rdfs:domain :Biomarker ;
+  rdfs:range xsd:string .
+
+:validationStatus a owl:DatatypeProperty ;
+  rdfs:label "Validation Status" ;
+  rdfs:comment "Clinical validation status" ;
+  rdfs:domain :Biomarker ;
+  rdfs:range xsd:string .
+
+:detectionMethod a owl:DatatypeProperty ;
+  rdfs:label "Detection Method" ;
+  rdfs:comment "Primary detection/measurement method" ;
+  rdfs:domain :Biomarker ;
+  rdfs:range xsd:string .
+
+# Molecular Assay Properties
+:assayId a owl:DatatypeProperty ;
+  rdfs:label "Assay ID" ;
+  rdfs:comment "Unique assay identifier" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:string .
+
+:assayName a owl:DatatypeProperty ;
+  rdfs:label "Assay Name" ;
+  rdfs:comment "Name of the assay" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:string .
+
+:assayType a owl:DatatypeProperty ;
+  rdfs:label "Assay Type" ;
+  rdfs:comment "Type of assay (ELISA, PCR, NGS, Mass Spec)" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:string .
+
+:platform a owl:DatatypeProperty ;
+  rdfs:label "Platform" ;
+  rdfs:comment "Instrument platform used" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:string .
+
+:sampleType a owl:DatatypeProperty ;
+  rdfs:label "Sample Type" ;
+  rdfs:comment "Required sample type (blood, tissue, urine)" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:string .
+
+:assayStatus a owl:DatatypeProperty ;
+  rdfs:label "Assay Status" ;
+  rdfs:comment "Current assay status" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:string .
+
+:sensitivity a owl:DatatypeProperty ;
+  rdfs:label "Sensitivity" ;
+  rdfs:comment "Assay sensitivity percentage" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:decimal .
+
+:specificity a owl:DatatypeProperty ;
+  rdfs:label "Specificity" ;
+  rdfs:comment "Assay specificity percentage" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:decimal .
+
+:detectionLimit a owl:DatatypeProperty ;
+  rdfs:label "Detection Limit" ;
+  rdfs:comment "Lower limit of detection" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:decimal .
+
+:assayCost a owl:DatatypeProperty ;
+  rdfs:label "Assay Cost" ;
+  rdfs:comment "Cost per assay" ;
+  rdfs:domain :MolecularAssay ;
+  rdfs:range xsd:decimal .
+
+# Patient Sample Properties
+:sampleId a owl:DatatypeProperty ;
+  rdfs:label "Sample ID" ;
+  rdfs:comment "Unique sample identifier" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range xsd:string .
+
+:patientId a owl:DatatypeProperty ;
+  rdfs:label "Patient ID" ;
+  rdfs:comment "Patient identifier" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range xsd:string .
+
+:collectionSite a owl:DatatypeProperty ;
+  rdfs:label "Collection Site" ;
+  rdfs:comment "Anatomical collection site" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range xsd:string .
+
+:sampleStatus a owl:DatatypeProperty ;
+  rdfs:label "Sample Status" ;
+  rdfs:comment "Current sample status" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range xsd:string .
+
+:storageCondition a owl:DatatypeProperty ;
+  rdfs:label "Storage Condition" ;
+  rdfs:comment "Sample storage conditions" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range xsd:string .
+
+:collectionDate a owl:DatatypeProperty ;
+  rdfs:label "Collection Date" ;
+  rdfs:comment "Sample collection date" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range xsd:date .
+
+:processingDate a owl:DatatypeProperty ;
+  rdfs:label "Processing Date" ;
+  rdfs:comment "Sample processing date" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range xsd:date .
+
+:sampleVolume a owl:DatatypeProperty ;
+  rdfs:label "Sample Volume" ;
+  rdfs:comment "Sample volume in mL" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range xsd:decimal .
+
+:sampleQualityScore a owl:DatatypeProperty ;
+  rdfs:label "Sample Quality Score" ;
+  rdfs:comment "Sample quality assessment score" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range xsd:decimal .
+
+# Biomarker Measurement Properties
+:measurementId a owl:DatatypeProperty ;
+  rdfs:label "Measurement ID" ;
+  rdfs:comment "Unique measurement identifier" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:string .
+
+:measurementStatus a owl:DatatypeProperty ;
+  rdfs:label "Measurement Status" ;
+  rdfs:comment "Measurement status (completed, pending, failed)" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:string .
+
+:measurementUnit a owl:DatatypeProperty ;
+  rdfs:label "Measurement Unit" ;
+  rdfs:comment "Unit of measurement" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:string .
+
+:referenceRange a owl:DatatypeProperty ;
+  rdfs:label "Reference Range" ;
+  rdfs:comment "Normal reference range" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:string .
+
+:measurementDate a owl:DatatypeProperty ;
+  rdfs:label "Measurement Date" ;
+  rdfs:comment "Date of measurement" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:date .
+
+:measuredValue a owl:DatatypeProperty ;
+  rdfs:label "Measured Value" ;
+  rdfs:comment "Quantitative measurement value" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:decimal .
+
+:foldChange a owl:DatatypeProperty ;
+  rdfs:label "Fold Change" ;
+  rdfs:comment "Fold change from baseline or control" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:decimal .
+
+:pValue a owl:DatatypeProperty ;
+  rdfs:label "P Value" ;
+  rdfs:comment "Statistical significance p-value" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:decimal .
+
+:confidenceIntervalLower a owl:DatatypeProperty ;
+  rdfs:label "Confidence Interval Lower" ;
+  rdfs:comment "Lower bound of confidence interval" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:decimal .
+
+:confidenceIntervalUpper a owl:DatatypeProperty ;
+  rdfs:label "Confidence Interval Upper" ;
+  rdfs:comment "Upper bound of confidence interval" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range xsd:decimal .
+
+# Clinical Study Properties
+:studyId a owl:DatatypeProperty ;
+  rdfs:label "Study ID" ;
+  rdfs:comment "Unique clinical study identifier" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:string .
+
+:studyName a owl:DatatypeProperty ;
+  rdfs:label "Study Name" ;
+  rdfs:comment "Name of the clinical study" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:string .
+
+:studyType a owl:DatatypeProperty ;
+  rdfs:label "Study Type" ;
+  rdfs:comment "Type of clinical study (cohort, case-control, RCT)" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:string .
+
+:diseaseIndication a owl:DatatypeProperty ;
+  rdfs:label "Disease Indication" ;
+  rdfs:comment "Primary disease indication" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:string .
+
+:studyPhase a owl:DatatypeProperty ;
+  rdfs:label "Study Phase" ;
+  rdfs:comment "Study phase or stage" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:string .
+
+:studyStatus a owl:DatatypeProperty ;
+  rdfs:label "Study Status" ;
+  rdfs:comment "Current study status" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:string .
+
+:primaryEndpoint a owl:DatatypeProperty ;
+  rdfs:label "Primary Endpoint" ;
+  rdfs:comment "Primary clinical endpoint" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:string .
+
+:studyStartDate a owl:DatatypeProperty ;
+  rdfs:label "Study Start Date" ;
+  rdfs:comment "Study initiation date" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:date .
+
+:studyEndDate a owl:DatatypeProperty ;
+  rdfs:label "Study End Date" ;
+  rdfs:comment "Study completion date" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:date .
+
+:enrolledPatients a owl:DatatypeProperty ;
+  rdfs:label "Enrolled Patients" ;
+  rdfs:comment "Number of enrolled patients" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:integer .
+
+:studyDurationMonths a owl:DatatypeProperty ;
+  rdfs:label "Study Duration Months" ;
+  rdfs:comment "Study duration in months" ;
+  rdfs:domain :ClinicalStudy ;
+  rdfs:range xsd:integer .
+
+# Patient Outcome Properties
+:outcomeId a owl:DatatypeProperty ;
+  rdfs:label "Outcome ID" ;
+  rdfs:comment "Unique outcome record identifier" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:string .
+
+:outcomeType a owl:DatatypeProperty ;
+  rdfs:label "Outcome Type" ;
+  rdfs:comment "Type of clinical outcome (survival, response, toxicity)" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:string .
+
+:outcomeStatus a owl:DatatypeProperty ;
+  rdfs:label "Outcome Status" ;
+  rdfs:comment "Outcome status (event, censored, ongoing)" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:string .
+
+:treatmentResponse a owl:DatatypeProperty ;
+  rdfs:label "Treatment Response" ;
+  rdfs:comment "Treatment response category" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:string .
+
+:diseaseProgression a owl:DatatypeProperty ;
+  rdfs:label "Disease Progression" ;
+  rdfs:comment "Disease progression status" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:string .
+
+:baselineDate a owl:DatatypeProperty ;
+  rdfs:label "Baseline Date" ;
+  rdfs:comment "Baseline assessment date" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:date .
+
+:lastFollowupDate a owl:DatatypeProperty ;
+  rdfs:label "Last Followup Date" ;
+  rdfs:comment "Last follow-up date" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:date .
+
+:eventDate a owl:DatatypeProperty ;
+  rdfs:label "Event Date" ;
+  rdfs:comment "Date of clinical event" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:date .
+
+:survivalTimeDays a owl:DatatypeProperty ;
+  rdfs:label "Survival Time Days" ;
+  rdfs:comment "Survival time in days" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:integer .
+
+:progressionFreeSurvivalDays a owl:DatatypeProperty ;
+  rdfs:label "Progression Free Survival Days" ;
+  rdfs:comment "Progression-free survival in days" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:integer .
+
+:hazardRatio a owl:DatatypeProperty ;
+  rdfs:label "Hazard Ratio" ;
+  rdfs:comment "Hazard ratio for survival analysis" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:decimal .
+
+:overallSurvivalProbability a owl:DatatypeProperty ;
+  rdfs:label "Overall Survival Probability" ;
+  rdfs:comment "Overall survival probability" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range xsd:decimal .
+
+# Biomarker Association Properties
+:associationId a owl:DatatypeProperty ;
+  rdfs:label "Association ID" ;
+  rdfs:comment "Unique association identifier" ;
+  rdfs:domain :BiomarkerAssociation ;
+  rdfs:range xsd:string .
+
+:associationType a owl:DatatypeProperty ;
+  rdfs:label "Association Type" ;
+  rdfs:comment "Type of statistical association" ;
+  rdfs:domain :BiomarkerAssociation ;
+  rdfs:range xsd:string .
+
+:analysisMethod a owl:DatatypeProperty ;
+  rdfs:label "Analysis Method" ;
+  rdfs:comment "Statistical analysis method used" ;
+  rdfs:domain :BiomarkerAssociation ;
+  rdfs:range xsd:string .
+
+:significanceLevel a owl:DatatypeProperty ;
+  rdfs:label "Significance Level" ;
+  rdfs:comment "Statistical significance level" ;
+  rdfs:domain :BiomarkerAssociation ;
+  rdfs:range xsd:string .
+
+:correlationCoefficient a owl:DatatypeProperty ;
+  rdfs:label "Correlation Coefficient" ;
+  rdfs:comment "Correlation coefficient" ;
+  rdfs:domain :BiomarkerAssociation ;
+  rdfs:range xsd:decimal .
+
+:oddsRatio a owl:DatatypeProperty ;
+  rdfs:label "Odds Ratio" ;
+  rdfs:comment "Odds ratio for binary outcomes" ;
+  rdfs:domain :BiomarkerAssociation ;
+  rdfs:range xsd:decimal .
+
+:aucScore a owl:DatatypeProperty ;
+  rdfs:label "AUC Score" ;
+  rdfs:comment "Area under the ROC curve" ;
+  rdfs:domain :BiomarkerAssociation ;
+  rdfs:range xsd:decimal .
+
+# Object Properties (Relationships)
+:measuredBy a owl:ObjectProperty ;
+  rdfs:label "Measured By" ;
+  rdfs:comment "Biomarker is measured by molecular assay" ;
+  rdfs:domain :Biomarker ;
+  rdfs:range :MolecularAssay .
+
+:belongsToPatient a owl:ObjectProperty ;
+  rdfs:label "Belongs To Patient" ;
+  rdfs:comment "Sample belongs to patient" ;
+  rdfs:domain :PatientSample ;
+  rdfs:range :PatientOutcome .
+
+:measurementFromSample a owl:ObjectProperty ;
+  rdfs:label "Measurement From Sample" ;
+  rdfs:comment "Measurement is from patient sample" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range :PatientSample .
+
+:measurementOfBiomarker a owl:ObjectProperty ;
+  rdfs:label "Measurement Of Biomarker" ;
+  rdfs:comment "Measurement is of specific biomarker" ;
+  rdfs:domain :BiomarkerMeasurement ;
+  rdfs:range :Biomarker .
+
+:outcomeInStudy a owl:ObjectProperty ;
+  rdfs:label "Outcome In Study" ;
+  rdfs:comment "Patient outcome is part of clinical study" ;
+  rdfs:domain :PatientOutcome ;
+  rdfs:range :ClinicalStudy .
+
+:associationWithBiomarker a owl:ObjectProperty ;
+  rdfs:label "Association With Biomarker" ;
+  rdfs:comment "Statistical association involves biomarker" ;
+  rdfs:domain :BiomarkerAssociation ;
+  rdfs:range :Biomarker .
+
+:associationWithOutcome a owl:ObjectProperty ;
+  rdfs:label "Association With Outcome" ;
+  rdfs:comment "Statistical association involves patient outcome" ;
+  rdfs:domain :BiomarkerAssociation ;
+  rdfs:range :PatientOutcome .

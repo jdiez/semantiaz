@@ -1,0 +1,432 @@
+name: biomarker_characterization
+description: Semantic model for biomarker characterization from molecular studies and clinical survival trials
+comments: Integrates molecular biomarker data with clinical outcomes for precision medicine applications
+
+tables:
+  - name: biomarkers
+    description: Molecular biomarkers and their characteristics
+    base_table:
+      database: biomarker_db
+      schema: molecular
+      table: biomarkers
+    dimensions:
+      - name: biomarker_id
+        data_type: STRING
+        unique: true
+        description: Unique biomarker identifier
+      - name: biomarker_name
+        data_type: STRING
+        description: Official biomarker name
+      - name: biomarker_type
+        data_type: STRING
+        description: Type of biomarker (protein, gene, metabolite, miRNA)
+        is_enum: true
+      - name: molecular_pathway
+        data_type: STRING
+        description: Associated molecular pathway
+      - name: tissue_specificity
+        data_type: STRING
+        description: Tissue or organ specificity
+      - name: biomarker_class
+        data_type: STRING
+        description: Functional classification (diagnostic, prognostic, predictive)
+        is_enum: true
+      - name: validation_status
+        data_type: STRING
+        description: Clinical validation status
+      - name: detection_method
+        data_type: STRING
+        description: Primary detection/measurement method
+
+  - name: molecular_assays
+    description: Laboratory assays for biomarker measurement
+    base_table:
+      database: biomarker_db
+      schema: laboratory
+      table: assays
+    dimensions:
+      - name: assay_id
+        data_type: STRING
+        unique: true
+        description: Unique assay identifier
+      - name: assay_name
+        data_type: STRING
+        description: Name of the assay
+      - name: assay_type
+        data_type: STRING
+        description: Type of assay (ELISA, PCR, NGS, Mass Spec)
+        is_enum: true
+      - name: platform
+        data_type: STRING
+        description: Instrument platform used
+      - name: sample_type
+        data_type: STRING
+        description: Required sample type (blood, tissue, urine)
+      - name: assay_status
+        data_type: STRING
+        description: Current assay status
+    facts:
+      - name: sensitivity
+        data_type: DECIMAL
+        description: Assay sensitivity percentage
+      - name: specificity
+        data_type: DECIMAL
+        description: Assay specificity percentage
+      - name: detection_limit
+        data_type: DECIMAL
+        description: Lower limit of detection
+      - name: assay_cost
+        data_type: DECIMAL
+        description: Cost per assay
+
+  - name: patient_samples
+    description: Patient samples collected for biomarker analysis
+    base_table:
+      database: biomarker_db
+      schema: clinical
+      table: samples
+    dimensions:
+      - name: sample_id
+        data_type: STRING
+        unique: true
+        description: Unique sample identifier
+      - name: patient_id
+        data_type: STRING
+        description: Patient identifier
+      - name: sample_type
+        data_type: STRING
+        description: Type of biological sample
+      - name: collection_site
+        data_type: STRING
+        description: Anatomical collection site
+      - name: sample_status
+        data_type: STRING
+        description: Current sample status
+      - name: storage_condition
+        data_type: STRING
+        description: Sample storage conditions
+    time_dimensions:
+      - name: collection_date
+        data_type: DATE
+        description: Sample collection date
+      - name: processing_date
+        data_type: DATE
+        description: Sample processing date
+    facts:
+      - name: sample_volume
+        data_type: DECIMAL
+        description: Sample volume in mL
+      - name: sample_quality_score
+        data_type: DECIMAL
+        description: Sample quality assessment score
+
+  - name: biomarker_measurements
+    description: Quantitative biomarker measurements from patient samples
+    base_table:
+      database: biomarker_db
+      schema: results
+      table: measurements
+    dimensions:
+      - name: measurement_id
+        data_type: STRING
+        unique: true
+        description: Unique measurement identifier
+      - name: measurement_status
+        data_type: STRING
+        description: Measurement status (completed, pending, failed)
+      - name: measurement_unit
+        data_type: STRING
+        description: Unit of measurement
+      - name: reference_range
+        data_type: STRING
+        description: Normal reference range
+    time_dimensions:
+      - name: measurement_date
+        data_type: DATE
+        description: Date of measurement
+    facts:
+      - name: measured_value
+        data_type: DECIMAL
+        description: Quantitative measurement value
+      - name: fold_change
+        data_type: DECIMAL
+        description: Fold change from baseline or control
+      - name: p_value
+        data_type: DECIMAL
+        description: Statistical significance p-value
+      - name: confidence_interval_lower
+        data_type: DECIMAL
+        description: Lower bound of confidence interval
+      - name: confidence_interval_upper
+        data_type: DECIMAL
+        description: Upper bound of confidence interval
+
+  - name: clinical_studies
+    description: Clinical studies investigating biomarker-outcome relationships
+    base_table:
+      database: biomarker_db
+      schema: clinical
+      table: studies
+    dimensions:
+      - name: study_id
+        data_type: STRING
+        unique: true
+        description: Unique clinical study identifier
+      - name: study_name
+        data_type: STRING
+        description: Name of the clinical study
+      - name: study_type
+        data_type: STRING
+        description: Type of clinical study (cohort, case-control, RCT)
+        is_enum: true
+      - name: disease_indication
+        data_type: STRING
+        description: Primary disease indication
+      - name: study_phase
+        data_type: STRING
+        description: Study phase or stage
+      - name: study_status
+        data_type: STRING
+        description: Current study status
+      - name: primary_endpoint
+        data_type: STRING
+        description: Primary clinical endpoint
+    time_dimensions:
+      - name: study_start_date
+        data_type: DATE
+        description: Study initiation date
+      - name: study_end_date
+        data_type: DATE
+        description: Study completion date
+    facts:
+      - name: enrolled_patients
+        data_type: INTEGER
+        description: Number of enrolled patients
+      - name: study_duration_months
+        data_type: INTEGER
+        description: Study duration in months
+
+  - name: patient_outcomes
+    description: Clinical outcomes and survival data for patients
+    base_table:
+      database: biomarker_db
+      schema: clinical
+      table: outcomes
+    dimensions:
+      - name: outcome_id
+        data_type: STRING
+        unique: true
+        description: Unique outcome record identifier
+      - name: patient_id
+        data_type: STRING
+        description: Patient identifier
+      - name: outcome_type
+        data_type: STRING
+        description: Type of clinical outcome (survival, response, toxicity)
+        is_enum: true
+      - name: outcome_status
+        data_type: STRING
+        description: Outcome status (event, censored, ongoing)
+      - name: treatment_response
+        data_type: STRING
+        description: Treatment response category
+      - name: disease_progression
+        data_type: STRING
+        description: Disease progression status
+    time_dimensions:
+      - name: baseline_date
+        data_type: DATE
+        description: Baseline assessment date
+      - name: last_followup_date
+        data_type: DATE
+        description: Last follow-up date
+      - name: event_date
+        data_type: DATE
+        description: Date of clinical event
+    facts:
+      - name: survival_time_days
+        data_type: INTEGER
+        description: Survival time in days
+      - name: progression_free_survival_days
+        data_type: INTEGER
+        description: Progression-free survival in days
+      - name: hazard_ratio
+        data_type: DECIMAL
+        description: Hazard ratio for survival analysis
+      - name: overall_survival_probability
+        data_type: DECIMAL
+        description: Overall survival probability
+
+  - name: biomarker_associations
+    description: Statistical associations between biomarkers and clinical outcomes
+    base_table:
+      database: biomarker_db
+      schema: analytics
+      table: associations
+    dimensions:
+      - name: association_id
+        data_type: STRING
+        unique: true
+        description: Unique association identifier
+      - name: association_type
+        data_type: STRING
+        description: Type of statistical association
+      - name: analysis_method
+        data_type: STRING
+        description: Statistical analysis method used
+      - name: significance_level
+        data_type: STRING
+        description: Statistical significance level
+    facts:
+      - name: correlation_coefficient
+        data_type: DECIMAL
+        description: Correlation coefficient
+      - name: p_value
+        data_type: DECIMAL
+        description: Statistical p-value
+      - name: odds_ratio
+        data_type: DECIMAL
+        description: Odds ratio for binary outcomes
+      - name: auc_score
+        data_type: DECIMAL
+        description: Area under the ROC curve
+      - name: sensitivity
+        data_type: DECIMAL
+        description: Diagnostic sensitivity
+      - name: specificity
+        data_type: DECIMAL
+        description: Diagnostic specificity
+
+relationships:
+  - name: biomarker_to_assay
+    left_table: biomarkers
+    right_table: molecular_assays
+    relationship_columns:
+      - left_column: biomarker_id
+        right_column: biomarker_id
+    join_type: inner
+    relationship_type: many_to_one
+
+  - name: sample_to_patient
+    left_table: patient_samples
+    right_table: patient_outcomes
+    relationship_columns:
+      - left_column: patient_id
+        right_column: patient_id
+    join_type: inner
+    relationship_type: many_to_one
+
+  - name: measurement_to_sample
+    left_table: biomarker_measurements
+    right_table: patient_samples
+    relationship_columns:
+      - left_column: sample_id
+        right_column: sample_id
+    join_type: inner
+    relationship_type: many_to_one
+
+  - name: measurement_to_biomarker
+    left_table: biomarker_measurements
+    right_table: biomarkers
+    relationship_columns:
+      - left_column: biomarker_id
+        right_column: biomarker_id
+    join_type: inner
+    relationship_type: many_to_one
+
+  - name: outcome_to_study
+    left_table: patient_outcomes
+    right_table: clinical_studies
+    relationship_columns:
+      - left_column: study_id
+        right_column: study_id
+    join_type: inner
+    relationship_type: many_to_one
+
+  - name: association_to_biomarker
+    left_table: biomarker_associations
+    right_table: biomarkers
+    relationship_columns:
+      - left_column: biomarker_id
+        right_column: biomarker_id
+    join_type: inner
+    relationship_type: many_to_one
+
+  - name: association_to_outcome
+    left_table: biomarker_associations
+    right_table: patient_outcomes
+    relationship_columns:
+      - left_column: outcome_id
+        right_column: outcome_id
+    join_type: inner
+    relationship_type: many_to_one
+
+metrics:
+  - name: total_biomarkers
+    description: Total number of biomarkers in database
+    expr: COUNT(DISTINCT biomarker_id)
+
+  - name: validated_biomarkers
+    description: Number of clinically validated biomarkers
+    expr: COUNT(DISTINCT CASE WHEN validation_status = 'Validated' THEN biomarker_id END)
+
+  - name: biomarker_validation_rate
+    description: Percentage of biomarkers that are clinically validated
+    expr: validated_biomarkers / NULLIF(total_biomarkers, 0) * 100
+
+  - name: average_assay_sensitivity
+    description: Average sensitivity across all assays
+    expr: AVG(sensitivity)
+
+  - name: average_assay_specificity
+    description: Average specificity across all assays
+    expr: AVG(specificity)
+
+  - name: total_patient_samples
+    description: Total number of patient samples collected
+    expr: COUNT(DISTINCT sample_id)
+
+  - name: processed_samples
+    description: Number of processed samples
+    expr: COUNT(DISTINCT CASE WHEN sample_status = 'Processed' THEN sample_id END)
+
+  - name: sample_processing_rate
+    description: Percentage of samples that have been processed
+    expr: processed_samples / NULLIF(total_patient_samples, 0) * 100
+
+  - name: significant_associations
+    description: Number of statistically significant biomarker associations
+    expr: COUNT(DISTINCT CASE WHEN p_value < 0.05 THEN association_id END)
+
+  - name: high_performance_biomarkers
+    description: Number of biomarkers with AUC > 0.8
+    expr: COUNT(DISTINCT CASE WHEN auc_score > 0.8 THEN biomarker_id END)
+
+  - name: median_survival_time
+    description: Median survival time across all patients
+    expr: MEDIAN(survival_time_days)
+
+  - name: average_hazard_ratio
+    description: Average hazard ratio for survival analysis
+    expr: AVG(hazard_ratio)
+
+verified_queries:
+  - name: biomarker_performance_by_type
+    question: What is the diagnostic performance of biomarkers by type?
+    sql: SELECT b.biomarker_type, AVG(ba.auc_score) as avg_auc, AVG(ba.sensitivity) as avg_sensitivity, AVG(ba.specificity) as avg_specificity FROM biomarkers b JOIN biomarker_associations ba ON b.biomarker_id = ba.biomarker_id GROUP BY b.biomarker_type ORDER BY avg_auc DESC
+
+  - name: survival_analysis_by_biomarker
+    question: Which biomarkers show significant association with survival outcomes?
+    sql: SELECT b.biomarker_name, ba.hazard_ratio, ba.p_value, ba.auc_score FROM biomarkers b JOIN biomarker_associations ba ON b.biomarker_id = ba.biomarker_id JOIN patient_outcomes po ON ba.outcome_id = po.outcome_id WHERE po.outcome_type = 'survival' AND ba.p_value < 0.05 ORDER BY ba.auc_score DESC
+
+  - name: assay_quality_metrics
+    question: What are the quality metrics for molecular assays?
+    sql: SELECT assay_type, platform, AVG(sensitivity) as avg_sensitivity, AVG(specificity) as avg_specificity, AVG(detection_limit) as avg_detection_limit FROM molecular_assays GROUP BY assay_type, platform ORDER BY avg_sensitivity DESC
+
+  - name: biomarker_validation_pipeline
+    question: What is the status of biomarkers in the validation pipeline?
+    sql: SELECT validation_status, biomarker_class, COUNT(*) as biomarker_count FROM biomarkers GROUP BY validation_status, biomarker_class ORDER BY biomarker_count DESC
+
+  - name: clinical_outcome_summary
+    question: What is the distribution of clinical outcomes by study?
+    sql: SELECT cs.study_name, po.outcome_type, COUNT(*) as patient_count, AVG(po.survival_time_days) as avg_survival_days FROM clinical_studies cs JOIN patient_outcomes po ON cs.study_id = po.study_id GROUP BY cs.study_name, po.outcome_type ORDER BY avg_survival_days DESC

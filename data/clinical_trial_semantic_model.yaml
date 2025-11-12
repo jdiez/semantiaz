@@ -1,0 +1,153 @@
+name: clinical_trial_operations
+description: Semantic model for clinical trial operations database
+
+tables:
+  - name: patients
+    description: Patient enrollment and demographics
+    base_table:
+      database: clinical_db
+      schema: operations
+      table: patients
+    primary_key:
+      names: [patient_id]
+    dimensions:
+      - name: patient_id
+        data_type: STRING
+        unique: true
+        description: Unique patient identifier
+      - name: age_group
+        data_type: STRING
+        expr: "CASE WHEN age < 30 THEN 'Under 30' WHEN age < 50 THEN '30-49' ELSE '50+' END"
+        description: Patient age grouping
+      - name: gender
+        data_type: STRING
+        description: Patient gender
+      - name: enrollment_status
+        data_type: STRING
+        description: Current enrollment status
+
+  - name: sites
+    description: Clinical trial sites
+    base_table:
+      database: clinical_db
+      schema: operations
+      table: sites
+    primary_key:
+      names: [site_id]
+    dimensions:
+      - name: site_id
+        data_type: STRING
+        unique: true
+        description: Unique site identifier
+      - name: site_country
+        data_type: STRING
+        description: Country where site is located
+      - name: site_type
+        data_type: STRING
+        description: Type of clinical site
+
+  - name: visits
+    description: Patient visits and appointments
+    base_table:
+      database: clinical_db
+      schema: operations
+      table: visits
+    primary_key:
+      names: [visit_id]
+    dimensions:
+      - name: visit_type
+        data_type: STRING
+        description: Type of patient visit
+      - name: visit_status
+        data_type: STRING
+        description: Status of the visit
+
+  - name: adverse_events
+    description: Adverse events reported during trial
+    base_table:
+      database: clinical_db
+      schema: operations
+      table: adverse_events
+    primary_key:
+      names: [ae_id]
+    dimensions:
+      - name: ae_severity
+        data_type: STRING
+        description: Severity level of adverse event
+      - name: ae_category
+        data_type: STRING
+        description: Category of adverse event
+
+relationships:
+  - name: patient_to_site
+    left_table: patients
+    right_table: sites
+    relationship_columns:
+      - left_column: site_id
+        right_column: site_id
+    join_type: inner
+    relationship_type: many_to_one
+
+  - name: patient_to_visits
+    left_table: patients
+    right_table: visits
+    relationship_columns:
+      - left_column: patient_id
+        right_column: patient_id
+    join_type: left_outer
+    relationship_type: many_to_one
+
+  - name: patient_to_adverse_events
+    left_table: patients
+    right_table: adverse_events
+    relationship_columns:
+      - left_column: patient_id
+        right_column: patient_id
+    join_type: left_outer
+    relationship_type: many_to_one
+
+metrics:
+  - name: total_patients
+    description: Total number of enrolled patients
+    expr: COUNT(DISTINCT patient_id)
+
+  - name: active_patients
+    description: Number of active patients
+    expr: COUNT(DISTINCT CASE WHEN enrollment_status = 'Active' THEN patient_id END)
+
+  - name: enrollment_rate
+    description: Patient enrollment rate
+    expr: total_patients / NULLIF(target_enrollment, 0) * 100
+
+  - name: total_visits
+    description: Total number of visits
+    expr: COUNT(visit_id)
+
+  - name: completed_visits
+    description: Number of completed visits
+    expr: COUNT(CASE WHEN visit_status = 'Completed' THEN visit_id END)
+
+  - name: visit_completion_rate
+    description: Visit completion rate
+    expr: completed_visits / NULLIF(total_visits, 0) * 100
+
+  - name: total_adverse_events
+    description: Total adverse events
+    expr: COUNT(ae_id)
+
+  - name: serious_adverse_events
+    description: Serious adverse events
+    expr: COUNT(CASE WHEN ae_severity = 'Serious' THEN ae_id END)
+
+  - name: ae_rate_per_patient
+    description: Adverse events per patient
+    expr: total_adverse_events / NULLIF(total_patients, 0)
+
+verified_queries:
+  - name: enrollment_by_site
+    question: How many patients are enrolled at each site?
+    sql: SELECT s.site_id, s.site_country, COUNT(p.patient_id) as patient_count FROM sites s LEFT JOIN patients p ON s.site_id = p.site_id GROUP BY s.site_id, s.site_country
+
+  - name: adverse_events_by_severity
+    question: What is the distribution of adverse events by severity?
+    sql: SELECT ae_severity, COUNT(*) as event_count FROM adverse_events GROUP BY ae_severity ORDER BY event_count DESC

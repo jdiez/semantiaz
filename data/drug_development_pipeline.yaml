@@ -1,0 +1,373 @@
+name: drug_development_pipeline
+description: Semantic model for pharmaceutical drug development from ideation to commercialization
+comments: Covers the complete drug development lifecycle including discovery, preclinical, clinical trials, regulatory approval, and commercialization
+
+tables:
+  - name: compounds
+    description: Chemical compounds and drug candidates
+    base_table:
+      database: pharma_db
+      schema: discovery
+      table: compounds
+    dimensions:
+      - name: compound_id
+        data_type: STRING
+        unique: true
+        description: Unique compound identifier
+      - name: compound_name
+        data_type: STRING
+        description: Chemical name of the compound
+      - name: molecular_formula
+        data_type: STRING
+        description: Molecular formula
+      - name: therapeutic_area
+        data_type: STRING
+        description: Target therapeutic area
+      - name: discovery_method
+        data_type: STRING
+        description: Method used for compound discovery
+      - name: compound_status
+        data_type: STRING
+        description: Current development status
+        is_enum: true
+
+  - name: targets
+    description: Biological targets for drug development
+    base_table:
+      database: pharma_db
+      schema: discovery
+      table: targets
+    dimensions:
+      - name: target_id
+        data_type: STRING
+        unique: true
+        description: Unique target identifier
+      - name: target_name
+        data_type: STRING
+        description: Name of the biological target
+      - name: target_type
+        data_type: STRING
+        description: Type of biological target (protein, enzyme, receptor)
+      - name: disease_indication
+        data_type: STRING
+        description: Associated disease indication
+      - name: validation_status
+        data_type: STRING
+        description: Target validation status
+
+  - name: preclinical_studies
+    description: Preclinical research and testing
+    base_table:
+      database: pharma_db
+      schema: preclinical
+      table: studies
+    dimensions:
+      - name: study_id
+        data_type: STRING
+        unique: true
+        description: Unique preclinical study identifier
+      - name: study_type
+        data_type: STRING
+        description: Type of preclinical study
+      - name: study_phase
+        data_type: STRING
+        description: Preclinical phase (in vitro, in vivo, toxicology)
+      - name: study_status
+        data_type: STRING
+        description: Current study status
+      - name: species
+        data_type: STRING
+        description: Test species for in vivo studies
+    time_dimensions:
+      - name: study_start_date
+        data_type: DATE
+        description: Study start date
+      - name: study_end_date
+        data_type: DATE
+        description: Study completion date
+    facts:
+      - name: efficacy_score
+        data_type: DECIMAL
+        description: Efficacy measurement score
+      - name: safety_score
+        data_type: DECIMAL
+        description: Safety assessment score
+      - name: study_cost
+        data_type: DECIMAL
+        description: Cost of preclinical study
+
+  - name: clinical_trials
+    description: Clinical trial studies across all phases
+    base_table:
+      database: pharma_db
+      schema: clinical
+      table: trials
+    dimensions:
+      - name: trial_id
+        data_type: STRING
+        unique: true
+        description: Unique clinical trial identifier
+      - name: trial_phase
+        data_type: STRING
+        description: Clinical trial phase (Phase I, II, III, IV)
+        is_enum: true
+      - name: trial_status
+        data_type: STRING
+        description: Current trial status
+      - name: indication
+        data_type: STRING
+        description: Medical indication being studied
+      - name: sponsor
+        data_type: STRING
+        description: Trial sponsor organization
+      - name: primary_endpoint
+        data_type: STRING
+        description: Primary endpoint of the trial
+    time_dimensions:
+      - name: trial_start_date
+        data_type: DATE
+        description: Trial initiation date
+      - name: trial_end_date
+        data_type: DATE
+        description: Trial completion date
+    facts:
+      - name: enrolled_patients
+        data_type: INTEGER
+        description: Number of enrolled patients
+      - name: trial_budget
+        data_type: DECIMAL
+        description: Total trial budget
+      - name: success_rate
+        data_type: DECIMAL
+        description: Trial success rate percentage
+
+  - name: regulatory_submissions
+    description: Regulatory submissions and approvals
+    base_table:
+      database: pharma_db
+      schema: regulatory
+      table: submissions
+    dimensions:
+      - name: submission_id
+        data_type: STRING
+        unique: true
+        description: Unique submission identifier
+      - name: submission_type
+        data_type: STRING
+        description: Type of regulatory submission (IND, NDA, BLA, MAA)
+      - name: regulatory_agency
+        data_type: STRING
+        description: Regulatory agency (FDA, EMA, PMDA)
+      - name: submission_status
+        data_type: STRING
+        description: Current submission status
+      - name: approval_status
+        data_type: STRING
+        description: Approval status
+      - name: priority_designation
+        data_type: STRING
+        description: Special designations (Fast Track, Breakthrough, Orphan)
+    time_dimensions:
+      - name: submission_date
+        data_type: DATE
+        description: Date of submission
+      - name: approval_date
+        data_type: DATE
+        description: Date of approval
+    facts:
+      - name: review_time_days
+        data_type: INTEGER
+        description: Regulatory review time in days
+
+  - name: manufacturing
+    description: Drug manufacturing and production
+    base_table:
+      database: pharma_db
+      schema: manufacturing
+      table: production
+    dimensions:
+      - name: batch_id
+        data_type: STRING
+        unique: true
+        description: Manufacturing batch identifier
+      - name: manufacturing_site
+        data_type: STRING
+        description: Manufacturing facility location
+      - name: formulation_type
+        data_type: STRING
+        description: Drug formulation type
+      - name: batch_status
+        data_type: STRING
+        description: Batch production status
+      - name: quality_grade
+        data_type: STRING
+        description: Quality control grade
+    time_dimensions:
+      - name: production_date
+        data_type: DATE
+        description: Production date
+    facts:
+      - name: batch_size
+        data_type: INTEGER
+        description: Batch size in units
+      - name: production_cost
+        data_type: DECIMAL
+        description: Production cost per batch
+      - name: yield_percentage
+        data_type: DECIMAL
+        description: Manufacturing yield percentage
+
+  - name: commercialization
+    description: Drug commercialization and market performance
+    base_table:
+      database: pharma_db
+      schema: commercial
+      table: products
+    dimensions:
+      - name: product_id
+        data_type: STRING
+        unique: true
+        description: Commercial product identifier
+      - name: brand_name
+        data_type: STRING
+        description: Commercial brand name
+      - name: market_segment
+        data_type: STRING
+        description: Target market segment
+      - name: launch_status
+        data_type: STRING
+        description: Product launch status
+      - name: geographic_market
+        data_type: STRING
+        description: Geographic market region
+    time_dimensions:
+      - name: launch_date
+        data_type: DATE
+        description: Product launch date
+    facts:
+      - name: revenue
+        data_type: DECIMAL
+        description: Product revenue
+      - name: units_sold
+        data_type: INTEGER
+        description: Units sold
+      - name: market_share
+        data_type: DECIMAL
+        description: Market share percentage
+
+relationships:
+  - name: compound_to_target
+    left_table: compounds
+    right_table: targets
+    relationship_columns:
+      - left_column: target_id
+        right_column: target_id
+    join_type: inner
+    relationship_type: many_to_one
+
+  - name: compound_to_preclinical
+    left_table: compounds
+    right_table: preclinical_studies
+    relationship_columns:
+      - left_column: compound_id
+        right_column: compound_id
+    join_type: left_outer
+    relationship_type: many_to_one
+
+  - name: compound_to_clinical
+    left_table: compounds
+    right_table: clinical_trials
+    relationship_columns:
+      - left_column: compound_id
+        right_column: compound_id
+    join_type: left_outer
+    relationship_type: many_to_one
+
+  - name: clinical_to_regulatory
+    left_table: clinical_trials
+    right_table: regulatory_submissions
+    relationship_columns:
+      - left_column: compound_id
+        right_column: compound_id
+    join_type: left_outer
+    relationship_type: many_to_one
+
+  - name: compound_to_manufacturing
+    left_table: compounds
+    right_table: manufacturing
+    relationship_columns:
+      - left_column: compound_id
+        right_column: compound_id
+    join_type: left_outer
+    relationship_type: many_to_one
+
+  - name: compound_to_commercialization
+    left_table: compounds
+    right_table: commercialization
+    relationship_columns:
+      - left_column: compound_id
+        right_column: compound_id
+    join_type: left_outer
+    relationship_type: many_to_one
+
+metrics:
+  - name: total_compounds
+    description: Total number of compounds in pipeline
+    expr: COUNT(DISTINCT compound_id)
+
+  - name: active_compounds
+    description: Number of active compounds in development
+    expr: COUNT(DISTINCT CASE WHEN compound_status = 'Active' THEN compound_id END)
+
+  - name: preclinical_success_rate
+    description: Preclinical to clinical transition rate
+    expr: COUNT(DISTINCT CASE WHEN study_status = 'Completed' AND efficacy_score >= 70 THEN compound_id END) / NULLIF(COUNT(DISTINCT compound_id), 0) * 100
+
+  - name: clinical_success_rate
+    description: Overall clinical trial success rate
+    expr: COUNT(DISTINCT CASE WHEN trial_status = 'Completed' AND success_rate >= 50 THEN compound_id END) / NULLIF(COUNT(DISTINCT compound_id), 0) * 100
+
+  - name: phase_transition_rate
+    description: Phase I to Phase II transition rate
+    expr: COUNT(DISTINCT CASE WHEN trial_phase = 'Phase II' THEN compound_id END) / NULLIF(COUNT(DISTINCT CASE WHEN trial_phase = 'Phase I' THEN compound_id END), 0) * 100
+
+  - name: regulatory_approval_rate
+    description: Regulatory approval success rate
+    expr: COUNT(DISTINCT CASE WHEN approval_status = 'Approved' THEN compound_id END) / NULLIF(COUNT(DISTINCT compound_id), 0) * 100
+
+  - name: time_to_market
+    description: Average time from discovery to market launch
+    expr: AVG(DATEDIFF('day', discovery_date, launch_date))
+
+  - name: total_development_cost
+    description: Total development cost across pipeline
+    expr: SUM(study_cost) + SUM(trial_budget)
+
+  - name: revenue_per_approved_drug
+    description: Average revenue per approved drug
+    expr: SUM(revenue) / NULLIF(COUNT(DISTINCT CASE WHEN approval_status = 'Approved' THEN compound_id END), 0)
+
+  - name: pipeline_value
+    description: Total pipeline value based on probability-adjusted revenue
+    expr: SUM(revenue * (success_rate / 100))
+
+verified_queries:
+  - name: pipeline_by_phase
+    question: What is the distribution of compounds across development phases?
+    sql: SELECT compound_status, COUNT(DISTINCT compound_id) as compound_count FROM compounds GROUP BY compound_status ORDER BY compound_count DESC
+
+  - name: clinical_trial_performance
+    question: What is the success rate by clinical trial phase?
+    sql: SELECT trial_phase, AVG(success_rate) as avg_success_rate, COUNT(*) as trial_count FROM clinical_trials GROUP BY trial_phase ORDER BY trial_phase
+
+  - name: regulatory_approval_timeline
+    question: What is the average regulatory review time by agency?
+    sql: SELECT regulatory_agency, AVG(review_time_days) as avg_review_days FROM regulatory_submissions WHERE approval_status = 'Approved' GROUP BY regulatory_agency
+
+  - name: therapeutic_area_performance
+    question: Which therapeutic areas have the highest success rates?
+    sql: SELECT c.therapeutic_area, COUNT(DISTINCT c.compound_id) as total_compounds, COUNT(DISTINCT CASE WHEN r.approval_status = 'Approved' THEN c.compound_id END) as approved_compounds FROM compounds c LEFT JOIN regulatory_submissions r ON c.compound_id = r.compound_id GROUP BY c.therapeutic_area
+
+  - name: commercialization_performance
+    question: What is the revenue performance by geographic market?
+    sql: SELECT geographic_market, SUM(revenue) as total_revenue, AVG(market_share) as avg_market_share FROM commercialization GROUP BY geographic_market ORDER BY total_revenue DESC

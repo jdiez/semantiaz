@@ -1,0 +1,437 @@
+@prefix : <http://example.org/pharma#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Ontology declaration
+: a owl:Ontology ;
+  rdfs:label "Drug Development Pipeline Ontology" ;
+  rdfs:comment "Ontology for pharmaceutical drug development from ideation to commercialization" .
+
+# Classes
+:Compound a owl:Class ;
+  rdfs:label "Compound" ;
+  rdfs:comment "Chemical compounds and drug candidates" .
+
+:Target a owl:Class ;
+  rdfs:label "Target" ;
+  rdfs:comment "Biological targets for drug development" .
+
+:PreclinicalStudy a owl:Class ;
+  rdfs:label "Preclinical Study" ;
+  rdfs:comment "Preclinical research and testing studies" .
+
+:ClinicalTrial a owl:Class ;
+  rdfs:label "Clinical Trial" ;
+  rdfs:comment "Clinical trial studies across all phases" .
+
+:RegulatorySubmission a owl:Class ;
+  rdfs:label "Regulatory Submission" ;
+  rdfs:comment "Regulatory submissions and approvals" .
+
+:Manufacturing a owl:Class ;
+  rdfs:label "Manufacturing" ;
+  rdfs:comment "Drug manufacturing and production" .
+
+:Commercialization a owl:Class ;
+  rdfs:label "Commercialization" ;
+  rdfs:comment "Drug commercialization and market performance" .
+
+# Compound Properties
+:compoundId a owl:DatatypeProperty ;
+  rdfs:label "Compound ID" ;
+  rdfs:comment "Unique compound identifier" ;
+  rdfs:domain :Compound ;
+  rdfs:range xsd:string .
+
+:compoundName a owl:DatatypeProperty ;
+  rdfs:label "Compound Name" ;
+  rdfs:comment "Chemical name of the compound" ;
+  rdfs:domain :Compound ;
+  rdfs:range xsd:string .
+
+:molecularFormula a owl:DatatypeProperty ;
+  rdfs:label "Molecular Formula" ;
+  rdfs:comment "Molecular formula of the compound" ;
+  rdfs:domain :Compound ;
+  rdfs:range xsd:string .
+
+:therapeuticArea a owl:DatatypeProperty ;
+  rdfs:label "Therapeutic Area" ;
+  rdfs:comment "Target therapeutic area" ;
+  rdfs:domain :Compound ;
+  rdfs:range xsd:string .
+
+:discoveryMethod a owl:DatatypeProperty ;
+  rdfs:label "Discovery Method" ;
+  rdfs:comment "Method used for compound discovery" ;
+  rdfs:domain :Compound ;
+  rdfs:range xsd:string .
+
+:compoundStatus a owl:DatatypeProperty ;
+  rdfs:label "Compound Status" ;
+  rdfs:comment "Current development status" ;
+  rdfs:domain :Compound ;
+  rdfs:range xsd:string .
+
+# Target Properties
+:targetId a owl:DatatypeProperty ;
+  rdfs:label "Target ID" ;
+  rdfs:comment "Unique target identifier" ;
+  rdfs:domain :Target ;
+  rdfs:range xsd:string .
+
+:targetName a owl:DatatypeProperty ;
+  rdfs:label "Target Name" ;
+  rdfs:comment "Name of the biological target" ;
+  rdfs:domain :Target ;
+  rdfs:range xsd:string .
+
+:targetType a owl:DatatypeProperty ;
+  rdfs:label "Target Type" ;
+  rdfs:comment "Type of biological target (protein, enzyme, receptor)" ;
+  rdfs:domain :Target ;
+  rdfs:range xsd:string .
+
+:diseaseIndication a owl:DatatypeProperty ;
+  rdfs:label "Disease Indication" ;
+  rdfs:comment "Associated disease indication" ;
+  rdfs:domain :Target ;
+  rdfs:range xsd:string .
+
+:validationStatus a owl:DatatypeProperty ;
+  rdfs:label "Validation Status" ;
+  rdfs:comment "Target validation status" ;
+  rdfs:domain :Target ;
+  rdfs:range xsd:string .
+
+# Preclinical Study Properties
+:studyId a owl:DatatypeProperty ;
+  rdfs:label "Study ID" ;
+  rdfs:comment "Unique preclinical study identifier" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:string .
+
+:studyType a owl:DatatypeProperty ;
+  rdfs:label "Study Type" ;
+  rdfs:comment "Type of preclinical study" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:string .
+
+:studyPhase a owl:DatatypeProperty ;
+  rdfs:label "Study Phase" ;
+  rdfs:comment "Preclinical phase (in vitro, in vivo, toxicology)" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:string .
+
+:studyStatus a owl:DatatypeProperty ;
+  rdfs:label "Study Status" ;
+  rdfs:comment "Current study status" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:string .
+
+:species a owl:DatatypeProperty ;
+  rdfs:label "Species" ;
+  rdfs:comment "Test species for in vivo studies" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:string .
+
+:studyStartDate a owl:DatatypeProperty ;
+  rdfs:label "Study Start Date" ;
+  rdfs:comment "Study start date" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:date .
+
+:studyEndDate a owl:DatatypeProperty ;
+  rdfs:label "Study End Date" ;
+  rdfs:comment "Study completion date" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:date .
+
+:efficacyScore a owl:DatatypeProperty ;
+  rdfs:label "Efficacy Score" ;
+  rdfs:comment "Efficacy measurement score" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:decimal .
+
+:safetyScore a owl:DatatypeProperty ;
+  rdfs:label "Safety Score" ;
+  rdfs:comment "Safety assessment score" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:decimal .
+
+:studyCost a owl:DatatypeProperty ;
+  rdfs:label "Study Cost" ;
+  rdfs:comment "Cost of preclinical study" ;
+  rdfs:domain :PreclinicalStudy ;
+  rdfs:range xsd:decimal .
+
+# Clinical Trial Properties
+:trialId a owl:DatatypeProperty ;
+  rdfs:label "Trial ID" ;
+  rdfs:comment "Unique clinical trial identifier" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:string .
+
+:trialPhase a owl:DatatypeProperty ;
+  rdfs:label "Trial Phase" ;
+  rdfs:comment "Clinical trial phase (Phase I, II, III, IV)" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:string .
+
+:trialStatus a owl:DatatypeProperty ;
+  rdfs:label "Trial Status" ;
+  rdfs:comment "Current trial status" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:string .
+
+:indication a owl:DatatypeProperty ;
+  rdfs:label "Indication" ;
+  rdfs:comment "Medical indication being studied" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:string .
+
+:sponsor a owl:DatatypeProperty ;
+  rdfs:label "Sponsor" ;
+  rdfs:comment "Trial sponsor organization" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:string .
+
+:primaryEndpoint a owl:DatatypeProperty ;
+  rdfs:label "Primary Endpoint" ;
+  rdfs:comment "Primary endpoint of the trial" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:string .
+
+:trialStartDate a owl:DatatypeProperty ;
+  rdfs:label "Trial Start Date" ;
+  rdfs:comment "Trial initiation date" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:date .
+
+:trialEndDate a owl:DatatypeProperty ;
+  rdfs:label "Trial End Date" ;
+  rdfs:comment "Trial completion date" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:date .
+
+:enrolledPatients a owl:DatatypeProperty ;
+  rdfs:label "Enrolled Patients" ;
+  rdfs:comment "Number of enrolled patients" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:integer .
+
+:trialBudget a owl:DatatypeProperty ;
+  rdfs:label "Trial Budget" ;
+  rdfs:comment "Total trial budget" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:decimal .
+
+:successRate a owl:DatatypeProperty ;
+  rdfs:label "Success Rate" ;
+  rdfs:comment "Trial success rate percentage" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range xsd:decimal .
+
+# Regulatory Submission Properties
+:submissionId a owl:DatatypeProperty ;
+  rdfs:label "Submission ID" ;
+  rdfs:comment "Unique submission identifier" ;
+  rdfs:domain :RegulatorySubmission ;
+  rdfs:range xsd:string .
+
+:submissionType a owl:DatatypeProperty ;
+  rdfs:label "Submission Type" ;
+  rdfs:comment "Type of regulatory submission (IND, NDA, BLA, MAA)" ;
+  rdfs:domain :RegulatorySubmission ;
+  rdfs:range xsd:string .
+
+:regulatoryAgency a owl:DatatypeProperty ;
+  rdfs:label "Regulatory Agency" ;
+  rdfs:comment "Regulatory agency (FDA, EMA, PMDA)" ;
+  rdfs:domain :RegulatorySubmission ;
+  rdfs:range xsd:string .
+
+:submissionStatus a owl:DatatypeProperty ;
+  rdfs:label "Submission Status" ;
+  rdfs:comment "Current submission status" ;
+  rdfs:domain :RegulatorySubmission ;
+  rdfs:range xsd:string .
+
+:approvalStatus a owl:DatatypeProperty ;
+  rdfs:label "Approval Status" ;
+  rdfs:comment "Approval status" ;
+  rdfs:domain :RegulatorySubmission ;
+  rdfs:range xsd:string .
+
+:priorityDesignation a owl:DatatypeProperty ;
+  rdfs:label "Priority Designation" ;
+  rdfs:comment "Special designations (Fast Track, Breakthrough, Orphan)" ;
+  rdfs:domain :RegulatorySubmission ;
+  rdfs:range xsd:string .
+
+:submissionDate a owl:DatatypeProperty ;
+  rdfs:label "Submission Date" ;
+  rdfs:comment "Date of submission" ;
+  rdfs:domain :RegulatorySubmission ;
+  rdfs:range xsd:date .
+
+:approvalDate a owl:DatatypeProperty ;
+  rdfs:label "Approval Date" ;
+  rdfs:comment "Date of approval" ;
+  rdfs:domain :RegulatorySubmission ;
+  rdfs:range xsd:date .
+
+:reviewTimeDays a owl:DatatypeProperty ;
+  rdfs:label "Review Time Days" ;
+  rdfs:comment "Regulatory review time in days" ;
+  rdfs:domain :RegulatorySubmission ;
+  rdfs:range xsd:integer .
+
+# Manufacturing Properties
+:batchId a owl:DatatypeProperty ;
+  rdfs:label "Batch ID" ;
+  rdfs:comment "Manufacturing batch identifier" ;
+  rdfs:domain :Manufacturing ;
+  rdfs:range xsd:string .
+
+:manufacturingSite a owl:DatatypeProperty ;
+  rdfs:label "Manufacturing Site" ;
+  rdfs:comment "Manufacturing facility location" ;
+  rdfs:domain :Manufacturing ;
+  rdfs:range xsd:string .
+
+:formulationType a owl:DatatypeProperty ;
+  rdfs:label "Formulation Type" ;
+  rdfs:comment "Drug formulation type" ;
+  rdfs:domain :Manufacturing ;
+  rdfs:range xsd:string .
+
+:batchStatus a owl:DatatypeProperty ;
+  rdfs:label "Batch Status" ;
+  rdfs:comment "Batch production status" ;
+  rdfs:domain :Manufacturing ;
+  rdfs:range xsd:string .
+
+:qualityGrade a owl:DatatypeProperty ;
+  rdfs:label "Quality Grade" ;
+  rdfs:comment "Quality control grade" ;
+  rdfs:domain :Manufacturing ;
+  rdfs:range xsd:string .
+
+:productionDate a owl:DatatypeProperty ;
+  rdfs:label "Production Date" ;
+  rdfs:comment "Production date" ;
+  rdfs:domain :Manufacturing ;
+  rdfs:range xsd:date .
+
+:batchSize a owl:DatatypeProperty ;
+  rdfs:label "Batch Size" ;
+  rdfs:comment "Batch size in units" ;
+  rdfs:domain :Manufacturing ;
+  rdfs:range xsd:integer .
+
+:productionCost a owl:DatatypeProperty ;
+  rdfs:label "Production Cost" ;
+  rdfs:comment "Production cost per batch" ;
+  rdfs:domain :Manufacturing ;
+  rdfs:range xsd:decimal .
+
+:yieldPercentage a owl:DatatypeProperty ;
+  rdfs:label "Yield Percentage" ;
+  rdfs:comment "Manufacturing yield percentage" ;
+  rdfs:domain :Manufacturing ;
+  rdfs:range xsd:decimal .
+
+# Commercialization Properties
+:productId a owl:DatatypeProperty ;
+  rdfs:label "Product ID" ;
+  rdfs:comment "Commercial product identifier" ;
+  rdfs:domain :Commercialization ;
+  rdfs:range xsd:string .
+
+:brandName a owl:DatatypeProperty ;
+  rdfs:label "Brand Name" ;
+  rdfs:comment "Commercial brand name" ;
+  rdfs:domain :Commercialization ;
+  rdfs:range xsd:string .
+
+:marketSegment a owl:DatatypeProperty ;
+  rdfs:label "Market Segment" ;
+  rdfs:comment "Target market segment" ;
+  rdfs:domain :Commercialization ;
+  rdfs:range xsd:string .
+
+:launchStatus a owl:DatatypeProperty ;
+  rdfs:label "Launch Status" ;
+  rdfs:comment "Product launch status" ;
+  rdfs:domain :Commercialization ;
+  rdfs:range xsd:string .
+
+:geographicMarket a owl:DatatypeProperty ;
+  rdfs:label "Geographic Market" ;
+  rdfs:comment "Geographic market region" ;
+  rdfs:domain :Commercialization ;
+  rdfs:range xsd:string .
+
+:launchDate a owl:DatatypeProperty ;
+  rdfs:label "Launch Date" ;
+  rdfs:comment "Product launch date" ;
+  rdfs:domain :Commercialization ;
+  rdfs:range xsd:date .
+
+:revenue a owl:DatatypeProperty ;
+  rdfs:label "Revenue" ;
+  rdfs:comment "Product revenue" ;
+  rdfs:domain :Commercialization ;
+  rdfs:range xsd:decimal .
+
+:unitsSold a owl:DatatypeProperty ;
+  rdfs:label "Units Sold" ;
+  rdfs:comment "Units sold" ;
+  rdfs:domain :Commercialization ;
+  rdfs:range xsd:integer .
+
+:marketShare a owl:DatatypeProperty ;
+  rdfs:label "Market Share" ;
+  rdfs:comment "Market share percentage" ;
+  rdfs:domain :Commercialization ;
+  rdfs:range xsd:decimal .
+
+# Object Properties (Relationships)
+:targetsTarget a owl:ObjectProperty ;
+  rdfs:label "Targets Target" ;
+  rdfs:comment "Compound targets a biological target" ;
+  rdfs:domain :Compound ;
+  rdfs:range :Target .
+
+:undergoesStudy a owl:ObjectProperty ;
+  rdfs:label "Undergoes Study" ;
+  rdfs:comment "Compound undergoes preclinical study" ;
+  rdfs:domain :Compound ;
+  rdfs:range :PreclinicalStudy .
+
+:entersTrial a owl:ObjectProperty ;
+  rdfs:label "Enters Trial" ;
+  rdfs:comment "Compound enters clinical trial" ;
+  rdfs:domain :Compound ;
+  rdfs:range :ClinicalTrial .
+
+:hasSubmission a owl:ObjectProperty ;
+  rdfs:label "Has Submission" ;
+  rdfs:comment "Clinical trial has regulatory submission" ;
+  rdfs:domain :ClinicalTrial ;
+  rdfs:range :RegulatorySubmission .
+
+:isManufactured a owl:ObjectProperty ;
+  rdfs:label "Is Manufactured" ;
+  rdfs:comment "Compound is manufactured" ;
+  rdfs:domain :Compound ;
+  rdfs:range :Manufacturing .
+
+:isCommercialized a owl:ObjectProperty ;
+  rdfs:label "Is Commercialized" ;
+  rdfs:comment "Compound is commercialized" ;
+  rdfs:domain :Compound ;
+  rdfs:range :Commercialization .

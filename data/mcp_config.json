@@ -1,0 +1,14 @@
+{
+  "snowflake": {
+    "account": "your_snowflake_account",
+    "user": "your_username",
+    "password": "your_password",
+    "warehouse": "your_warehouse",
+    "database": "clinical_db",
+    "schema": "operations"
+  },
+  "server": {
+    "name": "Snowflake Semantic Model Server",
+    "version": "1.0.0"
+  }
+}

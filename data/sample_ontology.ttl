@@ -1,0 +1,129 @@
+@prefix : <http://example.org/healthcare#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Ontology declaration
+: a owl:Ontology ;
+  rdfs:label "Healthcare Ontology" ;
+  rdfs:comment "A simple healthcare ontology for demonstration" .
+
+# Classes
+:Patient a owl:Class ;
+  rdfs:label "Patient" ;
+  rdfs:comment "A person receiving medical care" .
+
+:Doctor a owl:Class ;
+  rdfs:label "Doctor" ;
+  rdfs:comment "A medical practitioner" .
+
+:Hospital a owl:Class ;
+  rdfs:label "Hospital" ;
+  rdfs:comment "A healthcare facility" .
+
+:Treatment a owl:Class ;
+  rdfs:label "Treatment" ;
+  rdfs:comment "Medical treatment or procedure" .
+
+:Diagnosis a owl:Class ;
+  rdfs:label "Diagnosis" ;
+  rdfs:comment "Medical diagnosis" .
+
+# Datatype Properties
+:patientId a owl:DatatypeProperty ;
+  rdfs:label "Patient ID" ;
+  rdfs:comment "Unique identifier for patient" ;
+  rdfs:domain :Patient ;
+  rdfs:range xsd:string .
+
+:firstName a owl:DatatypeProperty ;
+  rdfs:label "First Name" ;
+  rdfs:comment "Patient's first name" ;
+  rdfs:domain :Patient ;
+  rdfs:range xsd:string .
+
+:lastName a owl:DatatypeProperty ;
+  rdfs:label "Last Name" ;
+  rdfs:comment "Patient's last name" ;
+  rdfs:domain :Patient ;
+  rdfs:range xsd:string .
+
+:dateOfBirth a owl:DatatypeProperty ;
+  rdfs:label "Date of Birth" ;
+  rdfs:comment "Patient's date of birth" ;
+  rdfs:domain :Patient ;
+  rdfs:range xsd:date .
+
+:age a owl:DatatypeProperty ;
+  rdfs:label "Age" ;
+  rdfs:comment "Patient's age in years" ;
+  rdfs:domain :Patient ;
+  rdfs:range xsd:integer .
+
+:doctorId a owl:DatatypeProperty ;
+  rdfs:label "Doctor ID" ;
+  rdfs:comment "Unique identifier for doctor" ;
+  rdfs:domain :Doctor ;
+  rdfs:range xsd:string .
+
+:specialization a owl:DatatypeProperty ;
+  rdfs:label "Specialization" ;
+  rdfs:comment "Doctor's medical specialization" ;
+  rdfs:domain :Doctor ;
+  rdfs:range xsd:string .
+
+:hospitalName a owl:DatatypeProperty ;
+  rdfs:label "Hospital Name" ;
+  rdfs:comment "Name of the hospital" ;
+  rdfs:domain :Hospital ;
+  rdfs:range xsd:string .
+
+:treatmentDate a owl:DatatypeProperty ;
+  rdfs:label "Treatment Date" ;
+  rdfs:comment "Date when treatment was administered" ;
+  rdfs:domain :Treatment ;
+  rdfs:range xsd:date .
+
+:treatmentType a owl:DatatypeProperty ;
+  rdfs:label "Treatment Type" ;
+  rdfs:comment "Type of medical treatment" ;
+  rdfs:domain :Treatment ;
+  rdfs:range xsd:string .
+
+:diagnosisCode a owl:DatatypeProperty ;
+  rdfs:label "Diagnosis Code" ;
+  rdfs:comment "Medical diagnosis code" ;
+  rdfs:domain :Diagnosis ;
+  rdfs:range xsd:string .
+
+:diagnosisDescription a owl:DatatypeProperty ;
+  rdfs:label "Diagnosis Description" ;
+  rdfs:comment "Description of the diagnosis" ;
+  rdfs:domain :Diagnosis ;
+  rdfs:range xsd:string .
+
+# Object Properties
+:treatedBy a owl:ObjectProperty ;
+  rdfs:label "Treated By" ;
+  rdfs:comment "Patient is treated by doctor" ;
+  rdfs:domain :Patient ;
+  rdfs:range :Doctor .
+
+:worksAt a owl:ObjectProperty ;
+  rdfs:label "Works At" ;
+  rdfs:comment "Doctor works at hospital" ;
+  rdfs:domain :Doctor ;
+  rdfs:range :Hospital .
+
+:receivedTreatment a owl:ObjectProperty ;
+  rdfs:label "Received Treatment" ;
+  rdfs:comment "Patient received treatment" ;
+  rdfs:domain :Patient ;
+  rdfs:range :Treatment .
+
+:hasDiagnosis a owl:ObjectProperty ;
+  rdfs:label "Has Diagnosis" ;
+  rdfs:comment "Patient has diagnosis" ;
+  rdfs:domain :Patient ;
+  rdfs:range :Diagnosis .
