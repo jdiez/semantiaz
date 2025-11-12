@@ -5,8 +5,6 @@ RDF/OWL to Semantic Model Converter
 Converts RDF/OWL ontologies into semantic models for Snowflake
 """
 
-from typing import Optional
-
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import OWL, RDF, RDFS
 from semantic_model import BaseTable, Columns, Dimension, LogicalTable, Relationship, RelationshipColumn, SemanticModel
@@ -15,24 +13,42 @@ from semantic_model import BaseTable, Columns, Dimension, LogicalTable, Relation
 class RDFSemanticConverter:
     """Converts RDF/OWL ontologies to semantic models"""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize RDFSemanticConverter"""
         self.graph = Graph()
         self.classes: dict[str, dict] = {}
         self.properties: dict[str, dict] = {}
         self.individuals: dict[str, dict] = {}
 
     def load_rdf(self, file_path: str, rdf_format: str = "turtle") -> None:
-        """Load RDF/OWL file"""
+        """Load RDF/OWL file from path
+        Args:
+            file_path (str): Path to RDF/OWL file
+            rdf_format (str): Format of RDF file (e.g., 'turtle', 'xml', 'n3')
+        Returns:
+            None
+        """
         self.graph.parse(file_path, format=rdf_format)
         self._extract_ontology_elements()
 
     def load_rdf_string(self, rdf_content: str, rdf_format: str = "turtle") -> None:
-        """Load RDF/OWL from string"""
+        """Load RDF/OWL from string
+        Args:
+            rdf_content (str): RDF/OWL content as string
+            rdf_format (str): Format of RDF content (e.g., 'turtle', 'xml', 'n3')
+        Returns:
+            None
+        """
         self.graph.parse(data=rdf_content, format=rdf_format)
         self._extract_ontology_elements()
 
     def _extract_ontology_elements(self) -> None:
-        """Extract classes, properties, and individuals from RDF graph"""
+        """Extract classes, properties, and individuals from RDF graph
+        Args:
+            None
+        Returns:
+            None
+        """
         # Extract classes
         for subj in self.graph.subjects(RDF.type, OWL.Class):
             class_name = self._get_local_name(subj)
@@ -69,21 +85,41 @@ class RDFSemanticConverter:
             }
 
     def _get_local_name(self, uri: URIRef) -> str:
-        """Extract local name from URI"""
+        """Extract local name from URI
+        Args:
+            uri (URIRef): The URI to extract the local name from
+        Returns:
+            str: Local name extracted from the URI
+        """
         return str(uri).split("#")[-1].split("/")[-1]
 
-    def _get_label(self, uri: URIRef) -> Optional[str]:
-        """Get rdfs:label for URI"""
+    def _get_label(self, uri: URIRef) -> str | None:
+        """Get rdfs:label for URI
+        Args:
+            uri (URIRef): The URI to get the label for
+        Returns:
+            str | None: The label if exists, else None
+        """
         labels = list(self.graph.objects(uri, RDFS.label))
         return str(labels[0]) if labels else None
 
-    def _get_comment(self, uri: URIRef) -> Optional[str]:
-        """Get rdfs:comment for URI"""
+    def _get_comment(self, uri: URIRef) -> str | None:
+        """Get rdfs:comment for URI
+        Args:
+            uri (URIRef): The URI to get the comment for
+        Returns:
+            str | None: The comment if exists, else None
+        """
         comments = list(self.graph.objects(uri, RDFS.comment))
         return str(comments[0]) if comments else None
 
     def _map_datatype_to_sql(self, datatype_uri: str) -> str:
-        """Map RDF datatype to SQL datatype"""
+        """Map RDF datatype to SQL datatype
+        Args:
+            datatype_uri (str): RDF datatype URI
+        Returns:
+            str: Corresponding SQL datatype
+        """
         datatype_mapping = {
             "http://www.w3.org/2001/XMLSchema#string": "STRING",
             "http://www.w3.org/2001/XMLSchema#int": "INTEGER",
@@ -99,7 +135,12 @@ class RDFSemanticConverter:
         return datatype_mapping.get(datatype_uri, "STRING")
 
     def _map_sql_to_datatype(self, sql_type: str) -> str:
-        """Map SQL datatype to RDF datatype"""
+        """Map SQL datatype to RDF datatype
+        Args:
+            sql_type (str): SQL datatype
+        Returns:
+            str: Corresponding RDF datatype URI
+        """
         sql_mapping = {
             "STRING": "http://www.w3.org/2001/XMLSchema#string",
             "INTEGER": "http://www.w3.org/2001/XMLSchema#integer",
@@ -116,7 +157,14 @@ class RDFSemanticConverter:
     def convert_to_semantic_model(
         self, model_name: str, database: str = "ontology_db", schema: str = "semantic"
     ) -> SemanticModel:
-        """Convert RDF/OWL to semantic model"""
+        """Convert RDF/OWL to semantic model
+        Args:
+            model_name (str): Name of the semantic model
+            database (str): Target database name
+            schema (str): Target schema name
+        Returns:
+            SemanticModel: Converted semantic model
+        """
         model = SemanticModel(name=model_name)
 
         # Convert classes to logical tables
@@ -190,7 +238,12 @@ class RDFSemanticConverter:
         return model
 
     def get_ontology_stats(self) -> dict[str, int]:
-        """Get statistics about the loaded ontology"""
+        """Get statistics about the loaded ontology
+        Args:
+            None
+        Returns:
+            dict[str, int]: Statistics including number of classes, properties, and triples
+        """
         return {
             "classes": len(self.classes),
             "object_properties": len([p for p in self.properties.values() if p["type"] == "object"]),
@@ -199,7 +252,12 @@ class RDFSemanticConverter:
         }
 
     def export_mapping_report(self) -> str:
-        """Generate a mapping report showing RDF to semantic model conversion"""
+        """Generate a mapping report showing RDF to semantic model conversion
+        Args:
+            None
+        Returns:
+            str: Mapping report as a string
+        """
         report = ["RDF/OWL to Semantic Model Mapping Report", "=" * 50, ""]
 
         report.append(f"Classes converted to tables: {len(self.classes)}")
@@ -233,7 +291,13 @@ class RDFSemanticConverter:
     def convert_from_semantic_model(
         self, semantic_model: SemanticModel, namespace_uri: str = "http://example.org/semantic#"
     ) -> Graph:
-        """Convert semantic model to RDF/OWL ontology"""
+        """Convert semantic model to RDF/OWL ontology
+        Args:
+            semantic_model (SemanticModel): The semantic model to convert
+            namespace_uri (str): The base namespace URI for the ontology
+        Returns:
+            Graph: RDFLib Graph representing the ontology
+        """
         graph = Graph()
 
         # Define namespaces
@@ -303,7 +367,15 @@ class RDFSemanticConverter:
         rdf_format: str = "turtle",
         namespace_uri: str = "http://example.org/semantic#",
     ) -> str:
-        """Export semantic model to RDF file"""
+        """Export semantic model to RDF file
+        Args:
+            semantic_model (SemanticModel): The semantic model to export
+            output_path (str): Path to output RDF file
+            rdf_format (str): RDF serialization format (e.g., 'turtle', 'xml', 'n3')
+            namespace_uri (str): The base namespace URI for the ontology
+        Returns:
+            str: RDF content as a string
+        """
         graph = self.convert_from_semantic_model(semantic_model, namespace_uri)
         rdf_content = graph.serialize(format=rdf_format)
 
@@ -318,7 +390,14 @@ class RDFSemanticConverter:
         rdf_format: str = "turtle",
         namespace_uri: str = "http://example.org/semantic#",
     ) -> str:
-        """Get semantic model as RDF string"""
+        """Get semantic model as RDF string
+        Args:
+            semantic_model (SemanticModel): The semantic model to convert
+            rdf_format (str): RDF serialization format (e.g., 'turtle', 'xml', 'n3')
+            namespace_uri (str): The base namespace URI for the ontology
+        Returns:
+            str: RDF content as a string
+        """
         graph = self.convert_from_semantic_model(semantic_model, namespace_uri)
         return graph.serialize(format=rdf_format)
 
@@ -326,7 +405,16 @@ class RDFSemanticConverter:
 def convert_rdf_to_semantic_model(
     rdf_file: str, model_name: str, database: str = "ontology_db", schema: str = "semantic", rdf_format: str = "turtle"
 ) -> SemanticModel:
-    """Convenience function to convert RDF file to semantic model"""
+    """Convenience function to convert RDF file to semantic model
+    Args:
+        rdf_file (str): Path to RDF/OWL file
+        model_name (str): Name of the semantic model
+        database (str): Target database name
+        schema (str): Target schema name
+        rdf_format (str): Format of RDF file (e.g., 'turtle', 'xml', 'n3')
+    Returns:
+        SemanticModel: Converted semantic model
+    """
     converter = RDFSemanticConverter()
     converter.load_rdf(rdf_file, rdf_format)
     return converter.convert_to_semantic_model(model_name, database, schema)
@@ -338,6 +426,14 @@ def convert_semantic_model_to_rdf(
     rdf_format: str = "turtle",
     namespace_uri: str = "http://example.org/semantic#",
 ) -> str:
-    """Convenience function to convert semantic model to RDF file"""
+    """Convenience function to convert semantic model to RDF file
+    Args:
+        semantic_model (SemanticModel): The semantic model to convert
+        output_path (str): Path to output RDF file
+        rdf_format (str): RDF serialization format (e.g., 'turtle', 'xml', 'n3')
+        namespace_uri (str): The base namespace URI for the ontology
+    Returns:
+        str: RDF content as a string
+    """
     converter = RDFSemanticConverter()
     return converter.export_semantic_model_to_rdf(semantic_model, output_path, rdf_format, namespace_uri)
