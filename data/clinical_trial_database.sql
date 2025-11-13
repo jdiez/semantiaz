@@ -195,3 +195,74 @@ INSERT INTO adverse_events VALUES
 ('AE028', 'PAT029', 'Moderate', 'Respiratory', 'Wheezing', '2024-04-22'),
 ('AE029', 'PAT030', 'Mild', 'Gastrointestinal', 'Loss of appetite', '2024-04-25'),
 ('AE030', 'PAT031', 'Moderate', 'Musculoskeletal', 'Joint stiffness', '2024-04-28');
+
+-- Recruitment Events table
+CREATE OR REPLACE TABLE recruitment_events (
+    recruitment_id STRING PRIMARY KEY,
+    site_id STRING,
+    event_type STRING,
+    event_date DATE,
+    target_count INTEGER,
+    actual_count INTEGER,
+    notes STRING,
+    FOREIGN KEY (site_id) REFERENCES sites(site_id)
+);
+
+INSERT INTO recruitment_events VALUES
+('REC001', 'SITE001', 'Screening Started', '2024-01-01', 10, 8, 'Initial recruitment phase'),
+('REC002', 'SITE001', 'Enrollment Target Met', '2024-02-15', 5, 5, 'Met monthly target'),
+('REC003', 'SITE002', 'Screening Started', '2024-01-05', 8, 6, 'Slower than expected'),
+('REC004', 'SITE003', 'Recruitment Milestone', '2024-01-20', 12, 10, 'Good progress'),
+('REC005', 'SITE004', 'Screening Started', '2024-01-10', 15, 12, 'Strong initial response'),
+('REC006', 'SITE005', 'Enrollment Challenge', '2024-02-01', 10, 4, 'Need to increase outreach'),
+('REC007', 'SITE006', 'Recruitment Success', '2024-02-10', 8, 9, 'Exceeded target'),
+('REC008', 'SITE007', 'Screening Started', '2024-01-25', 6, 5, 'On track'),
+('REC009', 'SITE008', 'Enrollment Boost', '2024-03-01', 12, 15, 'Marketing campaign effective'),
+('REC010', 'SITE009', 'Recruitment Review', '2024-02-20', 10, 8, 'Need strategy adjustment'),
+('REC011', 'SITE010', 'Screening Started', '2024-02-05', 14, 11, 'Moderate progress'),
+('REC012', 'SITE011', 'Enrollment Target Met', '2024-03-15', 7, 7, 'Consistent performance'),
+('REC013', 'SITE012', 'Recruitment Challenge', '2024-03-01', 9, 5, 'Site capacity issues'),
+('REC014', 'SITE013', 'Screening Started', '2024-02-15', 11, 9, 'Good initial response'),
+('REC015', 'SITE014', 'Enrollment Success', '2024-03-20', 8, 10, 'Exceeded expectations'),
+('REC016', 'SITE015', 'Recruitment Milestone', '2024-03-10', 6, 6, 'Met quarterly goal'),
+('REC017', 'SITE016', 'Screening Started', '2024-03-05', 13, 8, 'Need improvement'),
+('REC018', 'SITE017', 'Enrollment Boost', '2024-04-01', 9, 12, 'Strong referral network'),
+('REC019', 'SITE018', 'Recruitment Review', '2024-03-25', 7, 6, 'Close to target'),
+('REC020', 'SITE019', 'Screening Started', '2024-03-15', 10, 7, 'Steady progress');
+
+-- Quality Events table
+CREATE OR REPLACE TABLE quality_events (
+    quality_id STRING PRIMARY KEY,
+    site_id STRING,
+    patient_id STRING,
+    event_type STRING,
+    severity STRING,
+    event_date DATE,
+    description STRING,
+    resolution_status STRING,
+    corrective_action STRING,
+    FOREIGN KEY (site_id) REFERENCES sites(site_id),
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
+);
+
+INSERT INTO quality_events VALUES
+('QE001', 'SITE001', 'PAT001', 'Protocol Deviation', 'Minor', '2024-01-20', 'Visit window exceeded by 2 days', 'Resolved', 'Documented in case report form'),
+('QE002', 'SITE001', 'PAT002', 'Data Query', 'Minor', '2024-01-25', 'Missing vital signs data', 'Resolved', 'Data retrieved and entered'),
+('QE003', 'SITE002', 'PAT004', 'Protocol Violation', 'Major', '2024-02-01', 'Prohibited medication taken', 'Under Review', 'Investigating impact on study'),
+('QE004', 'SITE003', 'PAT006', 'Consent Issue', 'Minor', '2024-02-05', 'Informed consent not properly dated', 'Resolved', 'Corrected and re-signed'),
+('QE005', 'SITE004', 'PAT008', 'Data Discrepancy', 'Minor', '2024-02-10', 'Lab values inconsistent', 'Resolved', 'Lab re-run confirmed values'),
+('QE006', 'SITE005', 'PAT010', 'Protocol Deviation', 'Moderate', '2024-02-15', 'Incorrect dosing for 3 days', 'Resolved', 'Dosing corrected, safety review completed'),
+('QE007', 'SITE006', 'PAT012', 'Documentation Error', 'Minor', '2024-02-20', 'Incorrect date on CRF', 'Resolved', 'Date corrected with explanation'),
+('QE008', 'SITE007', 'PAT014', 'Eligibility Issue', 'Major', '2024-02-25', 'Patient did not meet inclusion criteria', 'Under Review', 'Reviewing enrollment decision'),
+('QE009', 'SITE008', 'PAT015', 'Data Query', 'Minor', '2024-03-01', 'Unclear adverse event description', 'Resolved', 'Additional details provided'),
+('QE010', 'SITE009', 'PAT016', 'Protocol Deviation', 'Minor', '2024-03-05', 'Lab draw outside window', 'Resolved', 'Documented deviation rationale'),
+('QE011', 'SITE010', 'PAT018', 'Consent Issue', 'Moderate', '2024-03-10', 'Patient withdrew consent verbally only', 'Resolved', 'Written withdrawal obtained'),
+('QE012', 'SITE011', 'PAT020', 'Data Discrepancy', 'Minor', '2024-03-15', 'Height/weight measurements inconsistent', 'Resolved', 'Measurements re-taken'),
+('QE013', 'SITE012', 'PAT022', 'Protocol Violation', 'Major', '2024-03-20', 'Concomitant medication not reported', 'Under Review', 'Safety assessment ongoing'),
+('QE014', 'SITE013', 'PAT024', 'Documentation Error', 'Minor', '2024-03-25', 'Missing investigator signature', 'Resolved', 'Signature obtained'),
+('QE015', 'SITE014', 'PAT026', 'Data Query', 'Minor', '2024-03-30', 'Incomplete medical history', 'Resolved', 'Additional history documented'),
+('QE016', 'SITE015', 'PAT028', 'Protocol Deviation', 'Moderate', '2024-04-05', 'Study drug taken with food', 'Resolved', 'Patient re-educated on dosing'),
+('QE017', 'SITE016', 'PAT030', 'Eligibility Issue', 'Minor', '2024-04-10', 'Lab value borderline for inclusion', 'Resolved', 'Medical monitor approved enrollment'),
+('QE018', 'SITE017', 'PAT031', 'Data Discrepancy', 'Minor', '2024-04-15', 'ECG interpretation differs', 'Resolved', 'Cardiologist review completed'),
+('QE019', 'SITE018', 'PAT033', 'Consent Issue', 'Minor', '2024-04-20', 'Patient questions about study procedures', 'Resolved', 'Additional counseling provided'),
+('QE020', 'SITE019', 'PAT035', 'Protocol Deviation', 'Minor', '2024-04-25', 'Visit rescheduled outside window', 'Resolved', 'Documented acceptable deviation');

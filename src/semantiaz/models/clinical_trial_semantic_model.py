@@ -32,6 +32,10 @@ visits_table = BaseTable(database="clinical_db", schema="operations", table="vis
 
 adverse_events_table = BaseTable(database="clinical_db", schema="operations", table="adverse_events")
 
+recruitment_events_table = BaseTable(database="clinical_db", schema="operations", table="recruitment_events")
+
+quality_events_table = BaseTable(database="clinical_db", schema="operations", table="quality_events")
+
 # Define dimensions
 patient_dimensions = [
     Dimension(name="patient_id", data_type="STRING", unique=True, description="Unique patient identifier"),
@@ -59,6 +63,22 @@ visit_dimensions = [
 ae_dimensions = [
     Dimension(name="ae_severity", data_type="STRING", description="Severity level of adverse event"),
     Dimension(name="ae_category", data_type="STRING", description="Category of adverse event"),
+]
+
+recruitment_dimensions = [
+    Dimension(name="event_type", data_type="STRING", description="Type of recruitment event"),
+    Dimension(
+        name="target_vs_actual",
+        data_type="STRING",
+        expr="CASE WHEN actual_count >= target_count THEN 'Met Target' ELSE 'Below Target' END",
+        description="Target achievement status",
+    ),
+]
+
+quality_dimensions = [
+    Dimension(name="event_type", data_type="STRING", description="Type of quality event"),
+    Dimension(name="severity", data_type="STRING", description="Severity of quality issue"),
+    Dimension(name="resolution_status", data_type="STRING", description="Current resolution status"),
 ]
 
 # Define logical tables
@@ -94,6 +114,22 @@ adverse_events_logical = LogicalTable(
     dimensions=ae_dimensions,
 )
 
+recruitment_events_logical = LogicalTable(
+    name="recruitment_events",
+    description="Recruitment activities and milestones",
+    base_table=recruitment_events_table,
+    primary_key=Columns(names=["recruitment_id"]),
+    dimensions=recruitment_dimensions,
+)
+
+quality_events_logical = LogicalTable(
+    name="quality_events",
+    description="Quality issues and protocol deviations",
+    base_table=quality_events_table,
+    primary_key=Columns(names=["quality_id"]),
+    dimensions=quality_dimensions,
+)
+
 # Define relationships
 patient_site_rel = Relationship(
     name="patient_to_site",
@@ -115,6 +151,30 @@ patient_ae_rel = Relationship(
     name="patient_to_adverse_events",
     left_table="patients",
     right_table="adverse_events",
+    relationship_columns=[RelationshipColumn(left_column="patient_id", right_column="patient_id")],
+    relationship_type="ONE_TO_MANY",
+)
+
+site_recruitment_rel = Relationship(
+    name="site_to_recruitment_events",
+    left_table="sites",
+    right_table="recruitment_events",
+    relationship_columns=[RelationshipColumn(left_column="site_id", right_column="site_id")],
+    relationship_type="ONE_TO_MANY",
+)
+
+site_quality_rel = Relationship(
+    name="site_to_quality_events",
+    left_table="sites",
+    right_table="quality_events",
+    relationship_columns=[RelationshipColumn(left_column="site_id", right_column="site_id")],
+    relationship_type="ONE_TO_MANY",
+)
+
+patient_quality_rel = Relationship(
+    name="patient_to_quality_events",
+    left_table="patients",
+    right_table="quality_events",
     relationship_columns=[RelationshipColumn(left_column="patient_id", right_column="patient_id")],
     relationship_type="ONE_TO_MANY",
 )
@@ -162,6 +222,34 @@ safety_metrics = [
     ),
 ]
 
+recruitment_metrics = [
+    Metric(name="total_recruitment_events", description="Total recruitment events", expr="COUNT(recruitment_id)"),
+    Metric(
+        name="recruitment_success_rate",
+        description="Percentage of events meeting target",
+        expr="COUNT(CASE WHEN actual_count >= target_count THEN recruitment_id END) / NULLIF(COUNT(recruitment_id), 0) * 100",
+    ),
+    Metric(
+        name="avg_recruitment_performance",
+        description="Average actual vs target recruitment",
+        expr="AVG(actual_count / NULLIF(target_count, 0) * 100)",
+    ),
+]
+
+quality_metrics = [
+    Metric(name="total_quality_events", description="Total quality events", expr="COUNT(quality_id)"),
+    Metric(
+        name="major_quality_issues",
+        description="Major quality issues",
+        expr="COUNT(CASE WHEN severity = 'Major' THEN quality_id END)",
+    ),
+    Metric(
+        name="quality_resolution_rate",
+        description="Percentage of resolved quality issues",
+        expr="COUNT(CASE WHEN resolution_status = 'Resolved' THEN quality_id END) / NULLIF(COUNT(quality_id), 0) * 100",
+    ),
+]
+
 # Define verified queries
 sample_queries = [
     VerifiedQuery(
@@ -174,12 +262,36 @@ sample_queries = [
         question="What is the distribution of adverse events by severity?",
         sql="SELECT ae_severity, COUNT(*) as event_count FROM adverse_events GROUP BY ae_severity ORDER BY event_count DESC",
     ),
+    VerifiedQuery(
+        name="recruitment_performance_by_site",
+        question="Which sites are meeting their recruitment targets?",
+        sql="SELECT s.site_id, s.site_country, AVG(r.actual_count / NULLIF(r.target_count, 0) * 100) as avg_performance FROM sites s JOIN recruitment_events r ON s.site_id = r.site_id GROUP BY s.site_id, s.site_country ORDER BY avg_performance DESC",
+    ),
+    VerifiedQuery(
+        name="quality_issues_by_type",
+        question="What are the most common quality issues?",
+        sql="SELECT event_type, severity, COUNT(*) as issue_count FROM quality_events GROUP BY event_type, severity ORDER BY issue_count DESC",
+    ),
 ]
 
 # Build the complete semantic model
-clinical_model.logical_tables = [patients_logical, sites_logical, visits_logical, adverse_events_logical]
-clinical_model.relationships = [patient_site_rel, patient_visit_rel, patient_ae_rel]
-clinical_model.metrics = enrollment_metrics + visit_metrics + safety_metrics
+clinical_model.logical_tables = [
+    patients_logical,
+    sites_logical,
+    visits_logical,
+    adverse_events_logical,
+    recruitment_events_logical,
+    quality_events_logical,
+]
+clinical_model.relationships = [
+    patient_site_rel,
+    patient_visit_rel,
+    patient_ae_rel,
+    site_recruitment_rel,
+    site_quality_rel,
+    patient_quality_rel,
+]
+clinical_model.metrics = enrollment_metrics + visit_metrics + safety_metrics + recruitment_metrics + quality_metrics
 clinical_model.verified_queries = sample_queries
 
 print(f"Created clinical trial semantic model with {len(clinical_model.logical_tables)} tables")
