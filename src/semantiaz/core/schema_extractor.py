@@ -15,6 +15,18 @@ class TableSchema:
     foreign_keys: list[dict[str, str]]
 
 
+@dataclass
+class ForeignKey:
+    column: str
+    referenced_table: str
+    referenced_column: str
+
+
+@dataclass
+class DatabaseSchema:
+    tables: dict[str, TableSchema]
+
+
 class SchemaExtractor:
     """Extract schema from Snowflake and generate semantic model YAML."""
 
