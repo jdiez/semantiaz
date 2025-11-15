@@ -1,21 +1,35 @@
 [project]
 name = "semantiaz"
 version = "0.0.1"
-description = "This is a template repository for Python projects that use uv for their dependency management."
+description = "Comprehensive semantic model management platform for data warehouses with multi-database support, quality assessment, knowledge graph generation, and interactive visualization capabilities."
 authors = [{ name = "Javier Díez Pérez", email = "javier.diez@astrazeneca.com" }]
 readme = "README.md"
-keywords = ['python']
-requires-python = ">=3.9,<4.0"
+keywords = ['semantic-model', 'data-warehouse', 'snowflake', 'knowledge-graph', 'rdf', 'cypher', 'mermaid']
+requires-python = ">=3.10"
 classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
+#     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "click>=8.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "ibis-framework[postgres,mysql,sqlite,duckdb,bigquery,trino]>=9.0.0",
+    "snowflake-connector-python>=3.0.0",
+    "pandas>=2.0.0",
+    "plotly>=5.0.0",
+    "rdflib>=7.0.0",
+    "fastmcp>=0.1.0",
+    "duckdb>=0.9.0",
 ]
 
 [project.urls]
@@ -23,18 +37,40 @@ Homepage = "https://kpdg464.github.io/semantiaz/"
 Repository = "https://github.com/kpdg464/semantiaz"
 Documentation = "https://kpdg464.github.io/semantiaz/"
 
-[dependency-groups]
+[project.scripts]
+semantiaz = "semantiaz.cli:cli"
+semantiaz-generate-model = "semantiaz.bin.cli_model_generator:generate_model"
+semantiaz-generate-generic = "semantiaz.bin.cli_generic_model_generator:generate_generic_model"
+semantiaz-generate-kg = "semantiaz.bin.cli_knowledge_graph_generator:generate_knowledge_graph"
+semantiaz-assess-quality = "semantiaz.bin.cli_quality_assessment:assess_quality"
+semantiaz-mermaid = "semantiaz.bin.cli_mermaid:mermaid"
+
+[project.optional-dependencies]
 dev = [
     "pytest>=7.2.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-asyncio>=0.21.0",
     "pre-commit>=2.20.0",
     "tox-uv>=1.11.3",
     "deptry>=0.23.0",
     "mypy>=0.991",
-    "pytest-cov>=4.0.0",
     "ruff>=0.11.5",
     "mkdocs>=1.4.2",
     "mkdocs-material>=8.5.10",
     "mkdocstrings[python]>=0.26.1",
+]
+all = [
+    "click>=8.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "ibis-framework[postgres,mysql,sqlite,duckdb,bigquery,trino]>=9.0.0",
+    "snowflake-connector-python>=3.0.0",
+    "pandas>=2.0.0",
+    "plotly>=5.0.0",
+    "rdflib>=7.0.0",
+    "fastmcp>=0.1.0",
+    "duckdb>=0.9.0",
 ]
 
 [build-system]
@@ -56,9 +92,26 @@ show_error_codes = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--cov=src/semantiaz",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-fail-under=80"
+]
+markers = [
+    # "slow: marks tests as slow (deselect with '-m "not slow"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests"
+]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 120
 fix = true
 
@@ -100,10 +153,30 @@ ignore = [
     "E501",
     # DoNotAssignLambda
     "E731",
+    # SQL injection warnings for trusted schema/table names
+    "S608",
+    # Try-except-pass for non-critical operations
+    "S110",
+    # Try-except-continue for robustness in loops
+    "S112",
+    # Subprocess with trusted input (pydoc)
+    "S603",
+    # Long exception messages are acceptable for clarity
+    "TRY003",
+    # Return in try block is acceptable
+    "TRY300",
+    # Raise in match is acceptable
+    "TRY301",
+    # Contextlib.suppress not always clearer
+    "SIM105",
+    # Complexity warnings for CLI functions
+    "C901",
+    # Ambiguous unicode characters
+    "RUF001",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]
+"tests/*" = ["S101", "S106"]
 
 [tool.ruff.format]
 preview = true

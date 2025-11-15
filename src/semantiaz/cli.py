@@ -7,6 +7,11 @@ import click
 import duckdb
 import snowflake.connector
 
+from .bin.cli_generic_model_generator import generate_generic_model
+from .bin.cli_knowledge_graph_generator import generate_knowledge_graph
+from .bin.cli_mermaid import mermaid
+from .bin.cli_model_generator import generate_model
+from .bin.cli_quality_assessment import assess_quality
 from .core.schema_extractor import SchemaExtractor
 from .core.view_deployer import ViewDeployer
 
@@ -15,6 +20,13 @@ from .core.view_deployer import ViewDeployer
 def cli():
     """Semantic model operations."""
     pass
+
+
+cli.add_command(generate_model, name="generate-model")
+cli.add_command(generate_generic_model, name="generate-generic-model")
+cli.add_command(generate_knowledge_graph, name="generate-kg")
+cli.add_command(assess_quality, name="assess-quality")
+cli.add_command(mermaid)
 
 
 @cli.command()

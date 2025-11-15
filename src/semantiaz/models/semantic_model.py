@@ -1,29 +1,52 @@
 """Framework to build Snowflake Cortex Semantic Models"""
 
 import json
-from typing import Annotated, Optional
+from datetime import datetime
+from typing import Annotated, Literal
 
+import sqlglot
 import yaml
-from pydantic import BaseModel, Field
-from typing_extensions import Literal
+from pydantic import BaseModel, Field, field_validator
 
 
 class SemanticModelError(Exception):
     """Base exception for semantic model operations"""
 
-    pass
+    def __init__(self, message: str) -> None:
+        """Initialize SemanticModelError with a message"""
+        super().__init__(f"Semantic Model Error: {message}")
 
 
 class NoCurrentModelError(SemanticModelError):
     """Raised when no current model is available"""
 
-    pass
+    def __init__(self) -> None:
+        """Initialize NoCurrentModelError with a default message"""
+        super().__init__("No current semantic model is set in the builder")
 
 
 class TableNotFoundError(SemanticModelError):
     """Raised when a table is not found"""
 
-    pass
+    def __init__(self) -> None:
+        """Initialize TableNotFoundError with a default message"""
+        super().__init__("Table not found in the current semantic model")
+
+
+class VerifiedQueryError(SemanticModelError):
+    """Raised when there is an error with a verified query"""
+
+    def __init__(self, message: str) -> None:
+        """Initialize VerifiedQueryError with a message"""
+        super().__init__(f"Verified Query Error: {message}")
+
+
+class SQLValidationError(SemanticModelError):
+    """Raised when SQL validation fails"""
+
+    def __init__(self, message: str) -> None:
+        """Initialize SQLValidationError with a message"""
+        super().__init__(f"SQL Validation Error: {message}")
 
 
 class CortexSearchService(BaseModel):
@@ -36,9 +59,9 @@ class CortexSearchService(BaseModel):
 
 
 class Dimension(BaseModel):
-    """A dimension represents categorical data that provides context to facts, such as product, customer, or location information.
+    """A dimension represents categorical data that provides context to Facts, such as product, customer, or location information.
     Dimensions typically contain descriptive text values, such as product names or customer addresses.
-    They are used to filter, group, and label facts in analyses and reports."""
+    They are used to filter, group, and label Facts in analyses and reports."""
 
     name: Annotated[str, Field(description="The name of the dimension")]
     synonyms: Annotated[list[str], Field(default=[], description="Alternative names for the dimension")]
@@ -54,9 +77,10 @@ class Dimension(BaseModel):
     is_enum: Annotated[bool, Field(default=False, description="Whether the dimension is an enumeration")]
 
 
-class TimeDimension(BaseModel):
-    """A time dimension provides temporal context for analyzing facts across different periods.
-    It enables tracking metrics over specific time intervals (dates, months, years) and supports analyses such as trend identification and period-over-period comparisons."""
+class TimeDimensions(BaseModel):
+    """A time dimension provides temporal context for analyzing Facts across different periods.
+    It enables tracking metrics over specific time intervals (dates, months, years) and
+    supports analyses such as trend identification and period-over-period comparisons."""
 
     name: Annotated[str, Field(description="The name of the time dimension")]
     synonyms: Annotated[list[str], Field(default=[], description="Alternative names for the time dimension")]
@@ -67,26 +91,26 @@ class TimeDimension(BaseModel):
 
 
 class Fact(BaseModel):
-    """Facts are measurable, quantitative data that provide context for analyses.
-    Facts represent numeric values related to business processes, such as sales, cost, or quantity.
-    A fact is an unaggregated, row-level concept."""
+    """Fact are measurable, quantitative data that provide context for analyses.
+    Fact represent numeric values related to business processes, such as sales, cost, or quantity.
+    A Fact is an unaggregated, row-level concept."""
 
-    name: Annotated[str, Field(description="The name of the fact")]
-    synonyms: Annotated[list[str], Field(default=[], description="Alternative names for the fact")]
-    description: Annotated[str | None, Field(default=None, description="A description of what the fact represents")]
+    name: Annotated[str, Field(description="The name of the Facts")]
+    synonyms: Annotated[list[str], Field(default=[], description="Alternative names for the Facts")]
+    description: Annotated[str | None, Field(default=None, description="A description of what the Facts represents")]
     access_modifier: Annotated[
         Literal["public_access", "private_access"],
-        Field(default="public_access", description="Access level for the fact"),
+        Field(default="public_access", description="Access level for the Facts"),
     ]
-    expr: Annotated[str | None, Field(default=None, description="SQL expression defining the fact")]
-    data_type: Annotated[str | None, Field(default=None, description="The data type of the fact")]
+    expr: Annotated[str | None, Field(default=None, description="SQL expression defining the Facts")]
+    data_type: Annotated[str | None, Field(default=None, description="The data type of the Facts")]
 
 
 class Metric(BaseModel):
     """A metric is a quantifiable measure of business performance expressed as a SQL formula.
     You can use metrics as key performance indicators (KPIs) in reports and dashboards.
     You can calculate two kinds of metrics:
-        - Regular metrics aggregate values (using functions such as SUM or AVG) over a fact column.
+        - Regular metrics aggregate values (using functions such as SUM or AVG) over a Facts column.
         - Derived metrics are calculated from existing metrics, using arithmetic operations such as addition or division.
     Define metrics at their most granular level for aggregation at higher levels.
     """
@@ -161,19 +185,63 @@ class VerifiedQuery(BaseModel):
     ]
     sql: Annotated[str | None, Field(default=None, description="The SQL query for answering the question")]
 
+    @field_validator("verified_at", mode="before")
+    @classmethod
+    def validate_verified_at(cls, v) -> int:
+        """Validate that verified_at is an integer timestamp"""
+        match v:
+            case int():
+                try:
+                    datetime.fromtimestamp(v)
+                except Exception as e:
+                    raise VerifiedQueryError(message=str(e)) from e
+                return v
+            case str() if v.isdigit():
+                return int(v)
+            case _:
+                raise VerifiedQueryError(message="bad_type_for_verified_at") from None
 
-class CustomInstruction(BaseModel):
+    @field_validator("sql", mode="after")
+    def validate_sql(cls, v: str) -> str:
+        """Validate that sql is a non-empty string
+        Arguments:
+            v: The SQL string to validate
+        Returns:
+            The validated SQL string
+        Raises:
+            VerifiedQueryError: If the SQL string is empty or invalid
+        """
+        if v is None or not v.strip():
+            raise VerifiedQueryError(message="sql_cannot_be_empty") from None
+        try:
+            sqlglot.parse_one(v)
+        except sqlglot.errors.ParseError as e:
+            raise VerifiedQueryError(message=f"invalid_SQL: {e}!s") from e
+        return v
+
+
+class ModuleCustomInstructions(BaseModel):
     """Custom instructions provide additional context or guidelines for using the semantic model.
     They can help tailor the behavior of AI systems or other tools that interact with the model."""
 
-    instruction_text: Annotated[str, Field(description="Custom instruction text for the semantic model")]
+    sql_generation: Annotated[list[str] | None, Field(description="Custom instruction text for the semantic model")]
+    question_categorization: Annotated[
+        list[str] | None,
+        Field(
+            description="You can use the question_categorization component to block questions about specific topics."
+            "For example, if you want to block questions about users, you might set the following instructions. "
+            "You can also use question categorization instructions to ask for missing details."
+            "In the following example, Cortex Analyst asks the user to provide a product type "
+            "if they ask about users and do not specify one."
+        ),
+    ]
 
 
 class Columns(BaseModel):
     """A collection of column names used for primary keys or other purposes.
     This class is used to define the structure of primary keys in logical tables."""
 
-    names: Annotated[list[str], Field(default=[], description="List of column names")]
+    columns: Annotated[list[str], Field(default=[], description="List of column names")]
 
 
 class BaseTable(BaseModel):
@@ -185,7 +253,7 @@ class BaseTable(BaseModel):
     table: Annotated[str | None, Field(default=None, description="Table name")]
 
 
-class LogicalTable(BaseModel):
+class Table(BaseModel):
     """A logical table represents a conceptual table in the semantic model.
     It may map to one or more physical tables in the database and contains dimensions that define its structure."""
 
@@ -195,39 +263,58 @@ class LogicalTable(BaseModel):
     primary_key: Annotated[Columns | None, Field(default=None, description="Primary key columns for this table")]
     dimensions: Annotated[list[Dimension], Field(default=[], description="List of dimensions in this table")]
     time_dimensions: Annotated[
-        list[TimeDimension], Field(default=[], description="List of time dimensions in this table")
+        list[TimeDimensions] | None, Field(default=None, description="List of time dimensions in this table")
     ]
-    facts: Annotated[list[Fact], Field(default=[], description="List of facts in this table")]
-    metrics: Annotated[list[Metric], Field(default=[], description="List of metrics scoped to this table")]
-    filters: Annotated[list[Filter], Field(default=[], description="List of filters for this table")]
+    facts: Annotated[list[Fact] | None, Field(default=None, description="List of Facts in this table")]
+    metrics: Annotated[list[Metric] | None, Field(default=None, description="List of metrics scoped to this table")]
+    filters: Annotated[list[Filter] | None, Field(default=None, description="List of filters for this table")]
 
 
 class SemanticModel(BaseModel):
     """A semantic model defines a business-oriented representation of data for analysis and reporting.
     It includes logical tables, relationships, dimensions, and metrics that provide a unified view of the underlying data sources."""
 
-    name: Annotated[str, Field(description="The name of the semantic model")]
-    description: Annotated[str | None, Field(default=None, description="Description of the semantic model")]
-    comments: Annotated[str | None, Field(default=None, description="Additional comments about the semantic model")]
-    logical_tables: Annotated[
-        list[LogicalTable], Field(default=[], description="List of logical tables in the semantic model")
+    name: Annotated[
+        str,
+        Field(
+            description="A descriptive name for this semantic model."
+            "Must be unique and follow the unquoted identifiers requirements."
+            "It also cannot conflict with Snowflake reserved keywords."
+        ),
     ]
+    description: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="A description of this semantic model, including details of what kind of analysis it’s useful for.",
+        ),
+    ]
+    comments: Annotated[str | None, Field(default=None, description="Additional comments about the semantic model")]
+    tables: Annotated[list[Table], Field(default=[], description="List of logical tables in the semantic model")]
     relationships: Annotated[list[Relationship], Field(default=[], description="List of relationships between tables")]
     metrics: Annotated[list[Metric], Field(default=[], description="List of metrics scoped to the semantic model")]
     verified_queries: Annotated[
         list[VerifiedQuery], Field(default=[], description="List of verified queries for the model")
     ]
     custom_instructions: Annotated[
-        list[CustomInstruction], Field(default=[], description="List of custom instructions for the model")
+        ModuleCustomInstructions | None,
+        Field(
+            default=None,
+            description="Define logic that influences how user questions are interpreted before SQL is generated"
+            "Maintain separate, more structured instructions for different parts of the Analyst workflow."
+            "Using natural language, you can tell AI Agents exactly how to generate SQL queries from within your semantic model YAML file."
+            "For example, use custom instructions to tell Agent Analyst what you mean by performance or financial year."
+            "In this way, you can improve the accuracy of the generated SQL by incorporating custom logic or additional elements.",
+        ),
     ]
 
-    def add_table(self, table: LogicalTable) -> None:
+    def add_table(self, table: Table) -> None:
         """Add a logical table to the semantic model"""
         # Check if the table already exists
-        for existing_table in self.logical_tables:
+        for existing_table in self.tables:
             if existing_table.name == table.name:
                 return
-        self.logical_tables.append(table)
+        self.tables.append(table)
 
     def add_relationship(self, relationship: Relationship) -> None:
         """Add a relationship to the semantic model"""
@@ -250,33 +337,24 @@ class SemanticModel(BaseModel):
         """Load semantic model from YAML file"""
         with open(yaml_path) as f:
             data = yaml.safe_load(f)
-        # Support 'tables' as alias for 'logical_tables'
-        if "tables" in data and "logical_tables" not in data:
-            data["logical_tables"] = data.pop("tables")
         return cls.model_validate(data)
 
     @classmethod
     def from_yaml_string(cls, yaml_string: str) -> "SemanticModel":
         """Load semantic model from YAML string"""
         data = yaml.safe_load(yaml_string)
-        # Support 'tables' as alias for 'logical_tables'
-        if "tables" in data and "logical_tables" not in data:
-            data["logical_tables"] = data.pop("tables")
         return cls.model_validate(data)
 
-    def to_yaml(self, yaml_path: Optional[str] = None) -> str:
+    def to_yaml(self, yaml_path: str | None = None) -> str:
         """Export semantic model to YAML format"""
         data = self.model_dump(exclude_none=True)
-        # Use 'tables' instead of 'logical_tables' in YAML output
-        if "logical_tables" in data:
-            data["tables"] = data.pop("logical_tables")
         yaml_content = yaml.dump(data, default_flow_style=False, sort_keys=False)
         if yaml_path:
             with open(yaml_path, "w") as f:
                 f.write(yaml_content)
         return yaml_content
 
-    def to_json(self, json_path: Optional[str] = None) -> str:
+    def to_json(self, json_path: str | None = None) -> str:
         """Export semantic model to JSON format"""
         json_content = json.dumps(self.model_dump(exclude_none=True), indent=2)
         if json_path:
@@ -284,9 +362,9 @@ class SemanticModel(BaseModel):
                 f.write(json_content)
         return json_content
 
-    def get_table(self, name: str) -> LogicalTable | None:
+    def get_table(self, name: str) -> Table | None:
         """Get a table by name"""
-        return next((t for t in self.logical_tables if t.name == name), None)
+        return next((t for t in self.tables if t.name == name), None)
 
     def get_metric(self, name: str) -> Metric | None:
         """Get a metric by name"""
@@ -310,9 +388,7 @@ class SemanticModelBuilder(BaseModel):
 
     def create_model(self, name: str, description: str | None = None) -> "SemanticModelBuilder":
         """Create a new semantic model and set it as current"""
-        model = SemanticModel(name=name)
-        if description:
-            model.custom_instructions.append(CustomInstruction(instruction_text=description))
+        model = SemanticModel(name=name, description=description)
         self.models.append(model)
         self.current_model = model
         return self
@@ -331,8 +407,8 @@ class SemanticModelBuilder(BaseModel):
             raise NoCurrentModelError()
 
         base_table = BaseTable(database=database, schema=schema, table=table)
-        pk = Columns(names=primary_key or [])
-        logical_table = LogicalTable(name=name, description=description, base_table=base_table, primary_key=pk)
+        pk = Columns(columns=primary_key or [])
+        logical_table = Table(name=name, description=description, base_table=base_table, primary_key=pk)
         self.current_model.add_table(logical_table)
         return self
 
@@ -350,7 +426,7 @@ class SemanticModelBuilder(BaseModel):
         if not self.current_model:
             raise NoCurrentModelError()
 
-        table = next((t for t in self.current_model.logical_tables if t.name == table_name), None)
+        table = next((t for t in self.current_model.tables if t.name == table_name), None)
         if not table:
             raise TableNotFoundError()
 
@@ -449,14 +525,14 @@ class SemanticModelBuilder(BaseModel):
         warnings = []
 
         # Check for tables without dimensions
-        for table in self.current_model.logical_tables:
+        for table in self.current_model.tables:
             if not table.dimensions:
                 warnings.append(f"Table {table.name} has no dimensions")
-            if not table.primary_key.names:
+            if table.primary_key and not table.primary_key.columns:
                 warnings.append(f"Table {table.name} has no primary key")
 
         # Check for orphaned relationships
-        table_names = {t.name for t in self.current_model.logical_tables}
+        table_names = {t.name for t in self.current_model.tables}
         for rel in self.current_model.relationships:
             if rel.left_table not in table_names:
                 issues.append(f"Relationship {rel.name} references unknown left table: {rel.left_table}")
@@ -472,7 +548,7 @@ class SemanticModelBuilder(BaseModel):
             "valid": len(issues) == 0,
             "issues": issues,
             "warnings": warnings,
-            "tables": len(self.current_model.logical_tables),
+            "tables": len(self.current_model.tables),
             "relationships": len(self.current_model.relationships),
             "metrics": len(self.current_model.metrics),
         }
