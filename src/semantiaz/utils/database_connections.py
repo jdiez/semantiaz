@@ -24,13 +24,13 @@ def create_database_connection(
     """Create a database connection using ibis for the specified backend.
 
     Args:
-        backend: Database backend type (postgres, mysql, sqlite, duckdb, bigquery, starburst).
+        backend: Database backend type (postgres, mysql, sqlite, duckdb, bigquery, redshift, starburst).
         database: Database name or project ID.
-        connection_string: Optional connection string for postgres/mysql/starburst.
-        host: Database host for postgres/mysql/starburst.
-        port: Database port for postgres/mysql/starburst.
-        user: Database user for postgres/mysql/starburst.
-        password: Database password for postgres/mysql/starburst.
+        connection_string: Optional connection string for postgres/mysql/redshift/starburst.
+        host: Database host for postgres/mysql/redshift/starburst.
+        port: Database port for postgres/mysql/redshift/starburst.
+        user: Database user for postgres/mysql/redshift/starburst.
+        password: Database password for postgres/mysql/redshift/starburst.
         file_path: File path for sqlite/duckdb.
         schema: Optional schema name.
 
@@ -43,13 +43,18 @@ def create_database_connection(
     """
     try:
         match backend:
-            case "postgres":
+            case "postgres" | "redshift":
+                default_port = 5439 if backend == "redshift" else None
                 conn = (
                     ibis.postgres.connect(connection_string)
                     if connection_string
-                    else ibis.postgres.connect(host=host, port=port, user=user, password=password, database=database)
+                    else ibis.postgres.connect(
+                        host=host, port=port or default_port, user=user, password=password, database=database
+                    )
                     if all([host, user, password, database])
-                    else (_ for _ in ()).throw(ValueError("PostgreSQL requires host, user, password, and database"))
+                    else (_ for _ in ()).throw(
+                        ValueError(f"{backend.title()} requires host, user, password, and database")
+                    )
                 )
             case "mysql":
                 conn = (
@@ -107,7 +112,7 @@ def get_supported_backends() -> list[str]:
     Returns:
         List of supported backend names.
     """
-    return ["postgres", "mysql", "sqlite", "duckdb", "bigquery", "starburst", "snowflake"]
+    return ["postgres", "mysql", "sqlite", "duckdb", "bigquery", "redshift", "starburst", "snowflake"]
 
 
 def validate_backend_params(backend: str, **kwargs) -> None:
@@ -121,10 +126,10 @@ def validate_backend_params(backend: str, **kwargs) -> None:
         ValueError: If required parameters are missing.
     """
     match backend:
-        case "postgres" | "mysql" | "starburst":
+        case "postgres" | "mysql" | "redshift" | "starburst":
             if not kwargs.get("connection_string"):
                 required = ["host", "user", "database"]
-                if backend in ["postgres", "mysql"]:
+                if backend in ["postgres", "mysql", "redshift"]:
                     required.append("password")
                 missing = [p for p in required if not kwargs.get(p)]
                 if missing:
